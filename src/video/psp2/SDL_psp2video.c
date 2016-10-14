@@ -53,6 +53,7 @@
 
 typedef struct private_hwdata {
 	vita2d_texture *texture;
+	SDL_Rect dst;
 } private_hwdata;
 
 /* Initialization/Query functions */
@@ -230,6 +231,12 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 	}
 	SDL_memset (surface->hwdata, 0, sizeof(private_hwdata));
 
+	// set initial texture destination
+	surface->hwdata->dst.x = 0;
+	surface->hwdata->dst.y = 0;
+	surface->hwdata->dst.w = surface->w;
+	surface->hwdata->dst.h = surface->h;
+
 	switch(surface->format->BitsPerPixel)
 	{
 		case 16:
@@ -272,10 +279,28 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 {
 	vita2d_start_drawing();
-	vita2d_draw_texture(surface->hwdata->texture, 0, 0);
+
+	vita2d_draw_texture_scale(
+		surface->hwdata->texture,
+		surface->hwdata->dst.x, surface->hwdata->dst.y,
+		surface->hwdata->dst.w/surface->w, surface->hwdata->dst.h/surface->h);
+
 	vita2d_end_drawing();
 	vita2d_wait_rendering_done();
 	vita2d_swap_buffers();
+}
+
+// custom psp2 function for centering/scaling main screen surface (texture)
+void SDL_SetVideoModeVita(int x, int y, float w, float h)
+{
+	SDL_Surface *surface = SDL_GetVideoSurface();
+	if(surface != NULL && surface->hwdata != NULL)
+	{
+		surface->hwdata->dst.x = x;
+		surface->hwdata->dst.y = y;
+		surface->hwdata->dst.w = w;
+		surface->hwdata->dst.h = h;
+	}
 }
 
 static int PSP2_LockHWSurface(_THIS, SDL_Surface *surface)

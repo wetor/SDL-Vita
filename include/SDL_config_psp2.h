@@ -31,6 +31,18 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#define __PSP2__ 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+sdffdf
+// custom ps vita hardware scaling
+void SDL_SetVideoModeVita(int x, int y, float w, float h);
+#ifdef __cplusplus
+}
+#endif
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed short int16_t;
