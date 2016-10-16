@@ -287,7 +287,8 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 	vita2d_draw_texture_scale(
 		surface->hwdata->texture,
 		surface->hwdata->dst.x, surface->hwdata->dst.y,
-		surface->hwdata->dst.w/surface->w, surface->hwdata->dst.h/surface->h);
+		(float)surface->hwdata->dst.w/(float)surface->w,
+		(float)surface->hwdata->dst.h/(float)surface->h);
 
 	vita2d_end_drawing();
 	vita2d_wait_rendering_done();
