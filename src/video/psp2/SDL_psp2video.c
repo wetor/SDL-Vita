@@ -270,10 +270,14 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 
 static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 {
-	vita2d_wait_rendering_done();
-	vita2d_free_texture(surface->hwdata->texture);
-	SDL_free(surface->hwdata);
-	surface->pixels = NULL;
+	if (surface->hwdata != NULL)
+	{
+		vita2d_wait_rendering_done();
+		vita2d_free_texture(surface->hwdata->texture);
+		SDL_free(surface->hwdata);
+		surface->hwdata = NULL;
+		surface->pixels = NULL;
+	}
 }
 
 static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
@@ -291,10 +295,10 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 }
 
 // custom psp2 function for centering/scaling main screen surface (texture)
-void SDL_SetVideoModeVita(int x, int y, float w, float h)
+void SDL_SetVideoModeScaling(int x, int y, float w, float h)
 {
 	SDL_Surface *surface = SDL_GetVideoSurface();
-	if(surface != NULL && surface->hwdata != NULL)
+	if (surface != NULL && surface->hwdata != NULL)
 	{
 		surface->hwdata->dst.x = x;
 		surface->hwdata->dst.y = y;
@@ -325,7 +329,7 @@ int PSP2_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 
 void PSP2_VideoQuit(_THIS)
 {
-	if (this->screen->hwdata != NULL && this->screen->pixels != NULL)
+	if (this->screen->hwdata != NULL)
 	{
 		PSP2_FreeHWSurface(this, this->screen);
 	}
@@ -336,5 +340,4 @@ VideoBootStrap PSP2_bootstrap = {
 	PSP2VID_DRIVER_NAME, "SDL psp2 video driver",
 	PSP2_Available, PSP2_CreateDevice
 };
-
 

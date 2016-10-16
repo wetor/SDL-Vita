@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 // custom ps vita hardware scaling
-void SDL_SetVideoModeVita(int x, int y, float w, float h);
+void SDL_SetVideoModeScaling(int x, int y, float w, float h);
 #ifdef __cplusplus
 }
 #endif
