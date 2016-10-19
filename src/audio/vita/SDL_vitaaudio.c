@@ -47,7 +47,8 @@
 static int
 VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
-    int format, mixlen, i;
+    int format, mixlen, i, port = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
+
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
     if (this->hidden == NULL) {
@@ -65,7 +66,6 @@ VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* The sample count must be a multiple of 64. */
     this->spec.samples = SCE_AUDIO_SAMPLE_ALIGN(this->spec.samples);
-    this->spec.freq = 48000;
 
     /* Update the fragment size as size in bytes. */
 /*  SDL_CalculateAudioSpec(this->spec); MOD */
@@ -98,7 +98,12 @@ VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     } else {
         format = SCE_AUDIO_OUT_MODE_STEREO;
     }
-    this->hidden->channel = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, this->spec.samples, this->spec.freq, format);
+
+    if(this->spec.freq < 48000) {
+		port = SCE_AUDIO_OUT_PORT_TYPE_BGM;
+	}
+
+    this->hidden->channel = sceAudioOutOpenPort(port, this->spec.samples, this->spec.freq, format);
     if (this->hidden->channel < 0) {
         free(this->hidden->rawbuf);
         this->hidden->rawbuf = NULL;
