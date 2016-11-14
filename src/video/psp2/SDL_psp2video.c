@@ -56,6 +56,8 @@ typedef struct private_hwdata {
 	SDL_Rect dst;
 } private_hwdata;
 
+static int vsync = 1;
+
 /* Initialization/Query functions */
 static int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat);
 static SDL_Rect **PSP2_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags);
@@ -138,7 +140,7 @@ static SDL_VideoDevice *PSP2_CreateDevice(int devindex)
 int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
 	vita2d_init();
-	vita2d_set_vblank_wait(1);
+	vita2d_set_vblank_wait(vsync);
 
 	vformat->BitsPerPixel = 16;
 	vformat->BytesPerPixel = 2;
@@ -291,7 +293,10 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 		(float)surface->hwdata->dst.h/(float)surface->h);
 
 	vita2d_end_drawing();
-	vita2d_wait_rendering_done();
+	if(vsync == 1)
+	{
+		vita2d_wait_rendering_done();
+	}
 	vita2d_swap_buffers();
 }
 
@@ -306,6 +311,13 @@ void SDL_SetVideoModeScaling(int x, int y, float w, float h)
 		surface->hwdata->dst.w = w;
 		surface->hwdata->dst.h = h;
 	}
+}
+
+// custom psp2 function for vsync
+void SDL_SetVideoModeSync(int enable_vsync)
+{
+	vsync = enable_vsync;
+	vita2d_set_vblank_wait(vsync);
 }
 
 static int PSP2_LockHWSurface(_THIS, SDL_Surface *surface)
