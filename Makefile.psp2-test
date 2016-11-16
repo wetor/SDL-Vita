@@ -4,7 +4,7 @@ OBJS     = test/testsprite.o
 
 LIBS = ./libSDL.a -lpsp2shell -lvita2d -lSceDisplay_stub -lSceGxm_stub \
 		-lSceSysmodule_stub -lSceCtrl_stub -lScePgf_stub -lSceNetCtl_stub \
-		-lSceNet_stub -lScePower_stub -lSceKernel_stub -lSceCommonDialog_stub \
+		-lSceNet_stub -lScePower_stub -lSceCommonDialog_stub \
 		-lSceAudio_stub -lSceAppMgr_stub -lpng -ljpeg -lz -lm -lc
 
 PREFIX  = arm-vita-eabi
