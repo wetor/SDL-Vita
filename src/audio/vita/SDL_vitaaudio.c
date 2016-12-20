@@ -30,6 +30,10 @@
 #include "SDL_audio.h"
 #include "SDL_error.h"
 #include "SDL_timer.h"
+<<<<<<< HEAD
+=======
+#include "../SDL_audiomem.h"
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "../SDL_sysaudio.h"
@@ -42,10 +46,17 @@
 #define SCE_AUDIO_MAX_VOLUME      0x8000
 
 /* The tag name used by VITA audio */
+<<<<<<< HEAD
 #define VITAAUDIO_DRIVER_NAME         "vita"
 
 static int
 VITAAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+=======
+#define VITAAUD_DRIVER_NAME         "vita"
+
+static int
+VITAAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 {
     int format, mixlen, i;
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -114,7 +125,11 @@ VITAAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
+<<<<<<< HEAD
 static void VITAAUDIO_PlayDevice(_THIS)
+=======
+static void VITAAUD_PlayDevice(_THIS)
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 {
     Uint8 *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
 
@@ -126,16 +141,28 @@ static void VITAAUDIO_PlayDevice(_THIS)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
+<<<<<<< HEAD
 static void VITAAUDIO_WaitDevice(_THIS)
 {
     /* Because we block when sending audio, there's no need for this function to do anything. */
 }
 static Uint8 *VITAAUDIO_GetDeviceBuf(_THIS)
+=======
+static void VITAAUD_WaitDevice(_THIS)
+{
+    /* Because we block when sending audio, there's no need for this function to do anything. */
+}
+static Uint8 *VITAAUD_GetDeviceBuf(_THIS)
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 {
     return this->hidden->mixbufs[this->hidden->next_buffer];
 }
 
+<<<<<<< HEAD
 static void VITAAUDIO_CloseDevice(_THIS)
+=======
+static void VITAAUD_CloseDevice(_THIS)
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 {
     if (this->hidden->channel >= 0) {
         sceAudioOutReleasePort(this->hidden->channel);
@@ -147,7 +174,11 @@ static void VITAAUDIO_CloseDevice(_THIS)
         this->hidden->rawbuf = NULL;
     }
 }
+<<<<<<< HEAD
 static void VITAAUDIO_ThreadInit(_THIS)
+=======
+static void VITAAUD_ThreadInit(_THIS)
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */
@@ -162,6 +193,7 @@ static void VITAAUDIO_ThreadInit(_THIS)
 
 
 static int
+<<<<<<< HEAD
 VITAAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
@@ -171,6 +203,19 @@ VITAAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->GetDeviceBuf = VITAAUDIO_GetDeviceBuf;
     impl->CloseDevice = VITAAUDIO_CloseDevice;
     impl->ThreadInit = VITAAUDIO_ThreadInit;
+=======
+VITAAUD_Init(SDL_AudioDriverImpl * impl)
+{
+
+    /* Set the function pointers */
+    impl->OpenDevice = VITAAUD_OpenDevice;
+    impl->PlayDevice = VITAAUD_PlayDevice;
+    impl->WaitDevice = VITAAUD_WaitDevice;
+    impl->GetDeviceBuf = VITAAUD_GetDeviceBuf;
+    impl->WaitDone = VITAAUD_WaitDevice;
+    impl->CloseDevice = VITAAUD_CloseDevice;
+    impl->ThreadInit = VITAAUD_ThreadInit;
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 
     /* VITA audio device */
     impl->OnlyHasDefaultOutputDevice = 1;
@@ -186,8 +231,13 @@ VITAAUDIO_Init(SDL_AudioDriverImpl * impl)
     return 1;   /* this audio target is available. */
 }
 
+<<<<<<< HEAD
 AudioBootStrap VITAAUDIO_bootstrap = {
     "vita", "VITA audio driver", VITAAUDIO_Init, 0
+=======
+AudioBootStrap VITAAUD_bootstrap = {
+    "vita", "VITA audio driver", VITAAUD_Init, 0
+>>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 };
 
  /* SDL_AUDI */
