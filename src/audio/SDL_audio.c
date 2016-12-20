@@ -33,49 +33,6 @@
 static SDL_AudioDriver current_audio;
 static SDL_AudioDevice *open_devices[16];
 
-<<<<<<< HEAD
-=======
-/* !!! FIXME: These are wordy and unlocalized... */
-#define DEFAULT_OUTPUT_DEVNAME "System audio output device"
-#define DEFAULT_INPUT_DEVNAME "System audio capture device"
-
-
-/*
- * Not all of these will be compiled and linked in, but it's convenient
- *  to have a complete list here and saves yet-another block of #ifdefs...
- *  Please see bootstrap[], below, for the actual #ifdef mess.
- */
-extern AudioBootStrap BSD_AUDIO_bootstrap;
-extern AudioBootStrap DSP_bootstrap;
-extern AudioBootStrap ALSA_bootstrap;
-extern AudioBootStrap PULSEAUDIO_bootstrap;
-extern AudioBootStrap QSAAUDIO_bootstrap;
-extern AudioBootStrap SUNAUDIO_bootstrap;
-extern AudioBootStrap ARTS_bootstrap;
-extern AudioBootStrap ESD_bootstrap;
-extern AudioBootStrap NACLAUD_bootstrap;
-extern AudioBootStrap NAS_bootstrap;
-extern AudioBootStrap XAUDIO2_bootstrap;
-extern AudioBootStrap DSOUND_bootstrap;
-extern AudioBootStrap WINMM_bootstrap;
-extern AudioBootStrap PAUDIO_bootstrap;
-extern AudioBootStrap HAIKUAUDIO_bootstrap;
-extern AudioBootStrap COREAUDIO_bootstrap;
-extern AudioBootStrap SNDMGR_bootstrap;
-extern AudioBootStrap DISKAUD_bootstrap;
-extern AudioBootStrap DUMMYAUD_bootstrap;
-extern AudioBootStrap DCAUD_bootstrap;
-extern AudioBootStrap DART_bootstrap;
-extern AudioBootStrap NDSAUD_bootstrap;
-extern AudioBootStrap FUSIONSOUND_bootstrap;
-extern AudioBootStrap ANDROIDAUD_bootstrap;
-extern AudioBootStrap PSPAUD_bootstrap;
-extern AudioBootStrap VITAAUD_bootstrap;
-extern AudioBootStrap SNDIO_bootstrap;
-extern AudioBootStrap EmscriptenAudio_bootstrap;
-
-
->>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 /* Available audio drivers */
 static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
@@ -146,9 +103,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_VITA
     &VITAAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_VITA
-    &VITAAUD_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
     &EMSCRIPTENAUDIO_bootstrap,

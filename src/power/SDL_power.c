@@ -30,22 +30,6 @@ typedef SDL_bool
     (*SDL_GetPowerInfo_Impl) (SDL_PowerState * state, int *seconds,
                               int *percent);
 
-<<<<<<< HEAD
-=======
-SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
-
->>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HARDWIRED
 /* This is for things that _never_ have a battery */

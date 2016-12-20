@@ -1183,7 +1183,6 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
         return 0;
 
-<<<<<<< HEAD
     if (!_this->is_dummy) {
         /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
         if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
@@ -1196,18 +1195,6 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
             if (_this->SetWindowFullscreen) {
                 _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
             }
-=======
-    /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
-    if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
-        if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
-            return -1;
-        }
-    } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
-        display = SDL_GetDisplayForWindow(window);
-        SDL_SetDisplayModeForDisplay(display, NULL);
-        if (_this->SetWindowFullscreen) {
-            _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
->>>>>>> 8c913e1ac976458886d024004b973f55e2488c34
         }
 
         if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
