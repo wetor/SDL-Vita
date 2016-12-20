@@ -28,7 +28,6 @@
 #include <psp2/types.h>
 #include <psp2/display.h>
 #include <psp2/gxm.h>
-#include <psp2/moduleinfo.h>
 #include <psp2/kernel/processmgr.h>
 #include <stdio.h>
 #include <string.h>
