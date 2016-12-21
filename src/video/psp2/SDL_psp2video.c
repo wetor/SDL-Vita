@@ -301,25 +301,6 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 }
 
 // custom psp2 function for centering/scaling main screen surface (texture)
-void SDL_SetVideoModeScalingBilinear(int x, int y, float w, float h)
-{
-	SDL_Surface *surface = SDL_GetVideoSurface();
-
-	//reduce pixelation
-	vita2d_texture_set_filters(surface->hwdata->texture,
-				   SCE_GXM_TEXTURE_FILTER_POINT,
-				   SCE_GXM_TEXTURE_FILTER_LINEAR);
-
-	if (surface != NULL && surface->hwdata != NULL)
-	{
-		surface->hwdata->dst.x = x;
-		surface->hwdata->dst.y = y;
-		surface->hwdata->dst.w = w;
-		surface->hwdata->dst.h = h;
-	}
-}
-
-// custom psp2 function for centering/scaling main screen surface (texture)
 void SDL_SetVideoModeScaling(int x, int y, float w, float h)
 {
 	SDL_Surface *surface = SDL_GetVideoSurface();
@@ -332,6 +313,29 @@ void SDL_SetVideoModeScaling(int x, int y, float w, float h)
 		surface->hwdata->dst.h = h;
 	}
 }
+
+// custom psp2 function for setting the texture filter to nearest or bilinear
+void SDL_SetVideoModeBilinear(int enable_bilinear)
+{
+	SDL_Surface *surface = SDL_GetVideoSurface();
+	
+	if (enable_bilinear) 
+	{
+		//reduce pixelation by setting bilinear filtering
+		//for magnification
+		//(first one is minimization filter,
+		//second one is magnification filter)
+		vita2d_texture_set_filters(surface->hwdata->texture,
+			SCE_GXM_TEXTURE_FILTER_POINT,
+			SCE_GXM_TEXTURE_FILTER_LINEAR);
+	}
+	else
+	{
+		vita2d_texture_set_filters(surface->hwdata->texture,
+			SCE_GXM_TEXTURE_FILTER_POINT,
+			SCE_GXM_TEXTURE_FILTER_POINT);
+	}
+}	
 
 // custom psp2 function for vsync
 void SDL_SetVideoModeSync(int enable_vsync)
