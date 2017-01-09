@@ -34,7 +34,8 @@
 #include <psp2/kernel/threadmgr.h>
 
 /* Current pad state */
-static SceCtrlData pad = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad1 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
 static const unsigned int button_map[] = {
     SCE_CTRL_TRIANGLE, SCE_CTRL_CIRCLE, SCE_CTRL_CROSS, SCE_CTRL_SQUARE,
     SCE_CTRL_LTRIGGER, SCE_CTRL_RTRIGGER,
@@ -82,10 +83,9 @@ static int calc_bezier_y(float t)
 int SDL_SYS_JoystickInit(void)
 {
     int i;
-
     /* Setup input */
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
-
+	
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
     for (i = 0; i < 128; i++)
@@ -95,7 +95,9 @@ int SDL_SYS_JoystickInit(void)
         analog_map[127-i] = -1 * analog_map[i+128];
     }
 
-    return 1;
+	 SDL_numjoysticks = 2; //include possibility of paired DS controller
+
+    return 2;
 }
 
 /* Function to get the device-dependent name of a joystick */
@@ -103,6 +105,9 @@ const char *SDL_SYS_JoystickName(int index)
 {
 	if (index == 0)
         return "psp2 controller";
+
+	if (index == 1)
+        return "second paired psp2 controller";
 
     SDL_SetError("No joystick available with that index");
     return(NULL);
@@ -133,39 +138,54 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
     unsigned int buttons;
     unsigned int changed;
     unsigned char lx, ly, rx, ry;
-    static unsigned int old_buttons = 0;
-    static unsigned char old_lx = 0, old_ly = 0;
-    static unsigned char old_rx = 0, old_ry = 0;
+    static unsigned int old_buttons[] = { 0, 0 };
+    static unsigned char old_lx[] = { 0, 0 };
+    static unsigned char old_ly[] = { 0, 0 };
+    static unsigned char old_rx[] = { 0, 0 };
+    static unsigned char old_ry[] = { 0, 0 };
+	 SceCtrlData *pad = NULL;    
+	 
+	 int index = joystick->index;
+	 
+	 if (index == 0)
+	 	pad = &pad0;
+	 else if (index == 1)
+	 	pad = &pad1;
+	 else
+	 	return;
+	 
+	 if (index == 0)
+		sceCtrlPeekBufferPositive(0, pad, 1); // Physical Vita controller or first paired Dualshock on Vita TV
+	 else if (index == 1)	
+    	sceCtrlPeekBufferPositive(2, pad, 1); // Second paired Dualshock on Vita TV
 
-    sceCtrlPeekBufferPositive(0, &pad, 1);
-
-    buttons = pad.buttons;
-    lx = pad.lx;
-    ly = pad.ly;
-    rx = pad.rx;
-    ry = pad.ry;
+    buttons = pad->buttons;
+    lx = pad->lx;
+    ly = pad->ly;
+    rx = pad->rx;
+    ry = pad->ry;
 
     /* Axes */
-    if(old_lx != lx) {
+    if(old_lx[index] != lx) {
         SDL_PrivateJoystickAxis(joystick, 0, analog_map[lx]);
-        old_lx = lx;
+        old_lx[index] = lx;
     }
-    if(old_ly != ly) {
+    if(old_ly[index] != ly) {
         SDL_PrivateJoystickAxis(joystick, 1, analog_map[ly]);
-        old_ly = ly;
+        old_ly[index] = ly;
     }
-    if(old_rx != rx) {
+    if(old_rx[index] != rx) {
         SDL_PrivateJoystickAxis(joystick, 2, analog_map[rx]);
-        old_rx = rx;
+        old_rx[index] = rx;
     }
-    if(old_ry != ry) {
+    if(old_ry[index] != ry) {
         SDL_PrivateJoystickAxis(joystick, 3, analog_map[ry]);
-        old_ry = ry;
+        old_ry[index] = ry;
     }
 
     /* Buttons */
-    changed = old_buttons ^ buttons;
-    old_buttons = buttons;
+    changed = old_buttons[index] ^ buttons;
+    old_buttons[index] = buttons;
     if(changed) {
         for(i=0; i<sizeof(button_map)/sizeof(button_map[0]); i++) {
             if(changed & button_map[i]) {
