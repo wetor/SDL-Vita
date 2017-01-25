@@ -40,7 +40,12 @@
 #include "SDL_timer.h"
 
 /* Current pad state */
-static SceCtrlData pad = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad1 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad2 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static SceCtrlData pad3 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .buttons = 0 };
+static int port_map[4]= { 0, 2, 3, 4 }; //index: SDL joy number, entry: Vita port number
+static int SDL_numjoysticks = 1;
 static const unsigned int button_map[] = {
     SCE_CTRL_TRIANGLE, SCE_CTRL_CIRCLE, SCE_CTRL_CROSS, SCE_CTRL_SQUARE,
     SCE_CTRL_LTRIGGER, SCE_CTRL_RTRIGGER,
@@ -100,12 +105,32 @@ int SDL_SYS_JoystickInit(void)
         analog_map[127-i] = -1 * analog_map[i+128];
     }
 
-    return 1;
+	SceCtrlPortInfo myPortInfo;
+		
+	// Assume we have at least one controller, even when nothing is paired
+	// This way the user can jump in, pair a controller
+	// and control things immediately even if it is paired
+	// after the app has already started.
+	
+	SDL_numjoysticks = 1; 
+	
+	//How many additional paired controllers are there?
+	sceCtrlGetControllerPortInfo(&myPortInfo);
+	//On Vita TV, port 0 and 1 are the same controller
+	//and that is the first one, so start at port 2
+	for (i=2; i<=4; i++)
+	{
+		if (myPortInfo.port[i]!=SCE_CTRL_TYPE_UNPAIRED)
+		{
+			SDL_numjoysticks++;
+		}
+	}
+   return SDL_numjoysticks;
 }
 
 int SDL_SYS_NumJoysticks()
 {
-    return 1;
+    return SDL_numjoysticks;
 }
 
 void SDL_SYS_JoystickDetect()
@@ -115,7 +140,16 @@ void SDL_SYS_JoystickDetect()
 /* Function to get the device-dependent name of a joystick */
 const char * SDL_SYS_JoystickNameForDeviceIndex(int device_index)
 {
-    return "PSVita builtin joypad";
+   if (device_index == 1)
+		return "PSVita controller 2";
+	
+	if (device_index == 2)
+		return "PSVita controller 3";
+
+	if (device_index == 3)
+		return "PSVita controller 4";
+   
+   return "PSVita builtin joypad";
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
@@ -127,9 +161,18 @@ SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
 /* Function to get the device-dependent name of a joystick */
 const char *SDL_SYS_JoystickName(int index)
 {
-    if (index == 0)
-        return "PSVita controller";
+	if (index == 0)
+   	return "PSVita controller";
 
+	if (index == 1)
+   	return "PSVita controller 2";
+	
+	if (index == 2)
+   	return "PSVita controller 3";
+
+	if (index == 3)
+   	return "PSVita controller 4";
+	
     SDL_SetError("No joystick available with that index");
     return(NULL);
 }
@@ -165,39 +208,55 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
     unsigned int buttons;
     unsigned int changed;
     unsigned char lx, ly, rx, ry;
-    static unsigned int old_buttons = 0;
-    static unsigned char old_lx = 0, old_ly = 0;
-    static unsigned char old_rx = 0, old_ry = 0;
+    static unsigned int old_buttons[] = { 0, 0, 0, 0 };
+    static unsigned char old_lx[] = { 0, 0, 0, 0 };
+    static unsigned char old_ly[] = { 0, 0, 0, 0 };
+    static unsigned char old_rx[] = { 0, 0, 0, 0 };
+    static unsigned char old_ry[] = { 0, 0, 0, 0 };
+	 SceCtrlData *pad = NULL;    
+	 
+	 int index = (int) SDL_JoystickInstanceID(joystick);
+	  
+	 if (index == 0)
+	 	pad = &pad0;
+	 else if (index == 1)
+	 	pad = &pad1;
+	 else if (index == 2)
+	 	pad = &pad2;
+	 else if (index == 3)
+	 	pad = &pad3;	 
+	 else
+	 	return;
+	 
+	 sceCtrlPeekBufferPositive(port_map[index], pad, 1); 
 
-    sceCtrlPeekBufferPositive(0, &pad, 1);
-
-    buttons = pad.buttons;
-    lx = pad.lx;
-    ly = pad.ly;
-    rx = pad.rx;
-    ry = pad.ry;
+    buttons = pad->buttons;
+    lx = pad->lx;
+    ly = pad->ly;
+    rx = pad->rx;
+    ry = pad->ry;
 
     /* Axes */
-    if(old_lx != lx) {
+    if(old_lx[index] != lx) {
         SDL_PrivateJoystickAxis(joystick, 0, analog_map[lx]);
-        old_lx = lx;
+        old_lx[index] = lx;
     }
-    if(old_ly != ly) {
+    if(old_ly[index] != ly) {
         SDL_PrivateJoystickAxis(joystick, 1, analog_map[ly]);
-        old_ly = ly;
+        old_ly[index] = ly;
     }
-    if(old_rx != rx) {
+    if(old_rx[index] != rx) {
         SDL_PrivateJoystickAxis(joystick, 2, analog_map[rx]);
-        old_rx = rx;
+        old_rx[index] = rx;
     }
-    if(old_ry != ry) {
+    if(old_ry[index] != ry) {
         SDL_PrivateJoystickAxis(joystick, 3, analog_map[ry]);
-        old_ry = ry;
+        old_ry[index] = ry;
     }
 
     /* Buttons */
-    changed = old_buttons ^ buttons;
-    old_buttons = buttons;
+    changed = old_buttons[index] ^ buttons;
+    old_buttons[index] = buttons;
     if(changed) {
         for(i=0; i<sizeof(button_map)/sizeof(button_map[0]); i++) {
             if(changed & button_map[i]) {
