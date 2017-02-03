@@ -299,8 +299,10 @@ VITA_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static void
 VITA_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-	// no needs to update texture data on ps vita ? VITA_LockTexture
-	// directly write to vita2d texture pixels buffer
+	// no needs to update texture data on ps vita. VITA_LockTexture
+	// already return a pointer to the vita2d texture pixels buffer.
+	// This really improve framerate when using lock/unlock.
+	
 	/*
 	VITA_TextureData *vita_texture = (VITA_TextureData *) texture->driverdata;
 	SDL_Rect rect;
