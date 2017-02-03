@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -214,7 +214,7 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
 
 static SDL_GLContext SDL_CurrentContext = NULL;
 
-GLES_FBOList *
+static GLES_FBOList *
 GLES_GetFBO(GLES_RenderData *data, Uint32 w, Uint32 h)
 {
    GLES_FBOList *result = data->framebuffers;
@@ -633,8 +633,6 @@ GLES_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     GLES_TextureData *texturedata = NULL;
     GLenum status;
 
-    GLES_ActivateRenderer(renderer);
-
     if (!data->GL_OES_framebuffer_object_supported) {
         return SDL_SetError("Can't enable render target support in this renderer");
     }
@@ -672,7 +670,7 @@ GLES_UpdateViewport(SDL_Renderer * renderer)
     } else {
         int w, h;
 
-        SDL_GetRendererOutputSize(renderer, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
                          renderer->viewport.w, renderer->viewport.h);
     }
@@ -694,6 +692,8 @@ GLES_UpdateViewport(SDL_Renderer * renderer)
                            0.0, 1.0);
         }
     }
+    data->glMatrixMode(GL_MODELVIEW);
+
     return 0;
 }
 
@@ -715,7 +715,7 @@ GLES_UpdateClipRect(SDL_Renderer * renderer)
         } else {
             int w, h;
 
-            SDL_GetRendererOutputSize(renderer, &w, &h);
+            SDL_GL_GetDrawableSize(renderer->window, &w, &h);
             data->glScissor(renderer->viewport.x + rect->x, h - renderer->viewport.y - rect->y - rect->h, rect->w, rect->h);
         }
     } else {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,16 +43,15 @@ static void
 InitIME()
 {
     static SDL_bool inited = SDL_FALSE;
-    const char *im_module;
+#ifdef HAVE_FCITX_FRONTEND_H
+    const char *im_module = SDL_getenv("SDL_IM_MODULE");
     const char *xmodifiers = SDL_getenv("XMODIFIERS");
+#endif
 
     if (inited == SDL_TRUE)
         return;
 
     inited = SDL_TRUE;
-
-    im_module = SDL_getenv("SDL_IM_MODULE");
-    xmodifiers = SDL_getenv("XMODIFIERS");
 
     /* See if fcitx IME support is being requested */
 #ifdef HAVE_FCITX_FRONTEND_H
@@ -137,3 +136,5 @@ SDL_IME_PumpEvents()
     if (SDL_IME_PumpEvents_Real)
         SDL_IME_PumpEvents_Real();
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

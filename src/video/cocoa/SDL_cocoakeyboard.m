@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -195,12 +195,17 @@ static IOHIDManagerRef s_hidManager = NULL;
 static void
 HIDCallback(void *context, IOReturn result, void *sender, IOHIDValueRef value)
 {
+    if (context != s_hidManager) {
+        /* An old callback, ignore it (related to bug 2157 below) */
+        return;
+    }
+
     IOHIDElementRef elem = IOHIDValueGetElement(value);
     if (IOHIDElementGetUsagePage(elem) != kHIDPage_KeyboardOrKeypad
         || IOHIDElementGetUsage(elem) != kHIDUsage_KeyboardCapsLock) {
         return;
     }
-    int pressed = IOHIDValueGetIntegerValue(value);
+    CFIndex pressed = IOHIDValueGetIntegerValue(value);
     SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
 }
 
@@ -232,10 +237,16 @@ QuitHIDCallback()
     if (!s_hidManager) {
         return;
     }
+
+#if 0 /* Releasing here causes a crash on Mac OS X 10.10 and earlier,
+       * so just leak it for now. See bug 2157 for details.
+       */
     IOHIDManagerUnscheduleFromRunLoop(s_hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     IOHIDManagerRegisterInputValueCallback(s_hidManager, NULL, NULL);
     IOHIDManagerClose(s_hidManager, 0);
+
     CFRelease(s_hidManager);
+#endif
     s_hidManager = NULL;
 }
 
@@ -262,7 +273,7 @@ InitHIDCallback()
         goto fail;
     }
     IOHIDManagerSetDeviceMatchingMultiple(s_hidManager, matches);
-    IOHIDManagerRegisterInputValueCallback(s_hidManager, HIDCallback, NULL);
+    IOHIDManagerRegisterInputValueCallback(s_hidManager, HIDCallback, s_hidManager);
     IOHIDManagerScheduleWithRunLoop(s_hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
     if (IOHIDManagerOpen(s_hidManager, kIOHIDOptionsTypeNone) == kIOReturnSuccess) {
         goto cleanup;

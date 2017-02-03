@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -307,7 +307,7 @@ static int GLES2_LoadFunctions(GLES2_DriverContext * data)
     return 0;
 }
 
-GLES2_FBOList *
+static GLES2_FBOList *
 GLES2_GetFBO(GLES2_DriverContext *data, Uint32 w, Uint32 h)
 {
    GLES2_FBOList *result = data->framebuffers;
@@ -388,7 +388,7 @@ GLES2_UpdateViewport(SDL_Renderer * renderer)
     } else {
         int w, h;
 
-        SDL_GetRendererOutputSize(renderer, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
                          renderer->viewport.w, renderer->viewport.h);
     }
@@ -417,7 +417,7 @@ GLES2_UpdateClipRect(SDL_Renderer * renderer)
         } else {
             int w, h;
 
-            SDL_GetRendererOutputSize(renderer, &w, &h);
+            SDL_GL_GetDrawableSize(renderer->window, &w, &h);
             data->glScissor(renderer->viewport.x + rect->x, h - renderer->viewport.y - rect->y - rect->h, rect->w, rect->h);
         }
     } else {
@@ -1068,7 +1068,7 @@ GLES2_CacheShader(SDL_Renderer *renderer, GLES2_ShaderType type, SDL_BlendMode b
     /* Compile or load the selected shader instance */
     entry->id = data->glCreateShader(instance->type);
     if (instance->format == (GLenum)-1) {
-        data->glShaderSource(entry->id, 1, (const char **)&instance->data, NULL);
+        data->glShaderSource(entry->id, 1, (const char **)(char *)&instance->data, NULL);
         data->glCompileShader(entry->id);
         data->glGetShaderiv(entry->id, GL_COMPILE_STATUS, &compileSuccessful);
     } else {
@@ -1923,7 +1923,9 @@ static int GLES2_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
  * Renderer instantiation                                                                        *
  *************************************************************************************************/
 
+#ifdef ZUNE_HD
 #define GL_NVIDIA_PLATFORM_BINARY_NV 0x890B
+#endif
 
 static void
 GLES2_ResetState(SDL_Renderer *renderer)
@@ -1963,7 +1965,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 #ifndef ZUNE_HD
     GLboolean hasCompiler;
 #endif
-    Uint32 window_flags;
+    Uint32 window_flags = 0; /* -Wconditional-uninitialized */
     GLint window_framebuffer;
     GLint value;
     int profile_mask = 0, major = 0, minor = 0;

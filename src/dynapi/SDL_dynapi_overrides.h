@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -612,3 +612,18 @@
 #define SDL_CreateRGBSurfaceWithFormat SDL_CreateRGBSurfaceWithFormat_REAL
 #define SDL_CreateRGBSurfaceWithFormatFrom SDL_CreateRGBSurfaceWithFormatFrom_REAL
 #define SDL_GetHintBoolean SDL_GetHintBoolean_REAL
+#define SDL_JoystickGetDeviceVendor SDL_JoystickGetDeviceVendor_REAL
+#define SDL_JoystickGetDeviceProduct SDL_JoystickGetDeviceProduct_REAL
+#define SDL_JoystickGetDeviceProductVersion SDL_JoystickGetDeviceProductVersion_REAL
+#define SDL_JoystickGetVendor SDL_JoystickGetVendor_REAL
+#define SDL_JoystickGetProduct SDL_JoystickGetProduct_REAL
+#define SDL_JoystickGetProductVersion SDL_JoystickGetProductVersion_REAL
+#define SDL_GameControllerGetVendor SDL_GameControllerGetVendor_REAL
+#define SDL_GameControllerGetProduct SDL_GameControllerGetProduct_REAL
+#define SDL_GameControllerGetProductVersion SDL_GameControllerGetProductVersion_REAL
+#define SDL_HasNEON SDL_HasNEON_REAL
+#define SDL_GameControllerNumMappings SDL_GameControllerNumMappings_REAL
+#define SDL_GameControllerMappingForIndex SDL_GameControllerMappingForIndex_REAL
+#define SDL_JoystickGetAxisInitialState SDL_JoystickGetAxisInitialState_REAL
+#define SDL_JoystickGetDeviceType SDL_JoystickGetDeviceType_REAL
+#define SDL_JoystickGetType SDL_JoystickGetType_REAL
