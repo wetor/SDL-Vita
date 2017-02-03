@@ -244,6 +244,9 @@ extern AudioBootStrap ANDROIDAUDIO_bootstrap;
 #if SDL_AUDIO_DRIVER_PSP
 extern AudioBootStrap PSPAUDIO_bootstrap;
 #endif
+#if SDL_AUDIO_DRIVER_VITA
+extern AudioBootStrap VITAAUD_bootstrap;
+#endif
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 #endif

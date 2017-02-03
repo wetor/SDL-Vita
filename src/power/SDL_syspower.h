@@ -51,6 +51,9 @@ SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
 #ifdef SDL_POWER_PSP        /* handles PSP. */
 SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
 #endif
+#ifdef SDL_POWER_VITA        /* handles PSVita. */
+SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
+#endif
 #ifdef SDL_POWER_WINRT          /* handles WinRT */
 SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
 #endif
