@@ -84,7 +84,7 @@ CC      = $(PREFIX)-gcc
 AR      = $(PREFIX)-gcc-ar
 CFLAGS  = -Wl,-q -Wall -O3 -Iinclude -D__VITA__ \
 			-D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
-			-marm -mfpu=neon -mcpu=cortex-a9 \
+			-mfpu=neon -mcpu=cortex-a9 \
 			-march=armv7-a -mfloat-abi=hard
 ASFLAGS = $(CFLAGS)
 
