@@ -120,20 +120,20 @@ typedef struct
 {
 	vita2d_texture	*tex;
 	unsigned int	pitch;
-	void		*data;
 	unsigned int	w;
 	unsigned int	h;
 } VITA_TextureData;
 
+/*
 static int
 GetScaleQuality(void)
 {
 	const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
 
 	if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-		return SCE_GXM_TEXTURE_FILTER_POINT; /* GU_NEAREST good for tile-map */
+		return SCE_GXM_TEXTURE_FILTER_POINT; // GU_NEAREST good for tile-map
 	} else {
-		return SCE_GXM_TEXTURE_FILTER_LINEAR; /* GU_LINEAR good for scaling */
+		return SCE_GXM_TEXTURE_FILTER_LINEAR; // GU_LINEAR good for scaling
 	}
 }
 
@@ -152,6 +152,7 @@ PixelFormatToVITAFMT(Uint32 format)
 		return SCE_GXM_COLOR_FORMAT_A8B8G8R8;
 	}
 }
+*/
 
 void
 StartDrawing(SDL_Renderer *renderer)
@@ -234,7 +235,6 @@ VITA_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 static int
 VITA_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-/*	  VITA_RenderData *renderdata = (VITA_RenderData *) renderer->driverdata; */
 	VITA_TextureData* vita_texture = (VITA_TextureData*) SDL_calloc(1, sizeof(*vita_texture));
 
 	if(!vita_texture)
@@ -250,7 +250,6 @@ VITA_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 	vita_texture->w = vita2d_texture_get_width(vita_texture->tex);
 	vita_texture->h = vita2d_texture_get_height(vita_texture->tex);
-	vita_texture->data = vita2d_texture_get_datap(vita_texture->tex);
 	vita_texture->pitch = vita2d_texture_get_width(vita_texture->tex) *SDL_BYTESPERPIXEL(texture->format);
 
 	texture->driverdata = vita_texture;
@@ -263,7 +262,6 @@ static int
 VITA_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 				   const SDL_Rect *rect, const void *pixels, int pitch)
 {
-/*  VITA_TextureData *vita_texture = (VITA_TextureData *) texture->driverdata; */
 	const Uint8 *src;
 	Uint8 *dst;
 	int row, length,dpitch;
@@ -292,8 +290,8 @@ VITA_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 	VITA_TextureData *vita_texture = (VITA_TextureData *) texture->driverdata;
 
 	*pixels =
-		(void *) ((Uint8 *) vita_texture->data + rect->y *vita_texture->w +
-				  rect->x *SDL_BYTESPERPIXEL(texture->format));
+		(void *) ((Uint8 *) vita2d_texture_get_datap(vita_texture->tex)
+			+ rect->y *vita_texture->w + rect->x *SDL_BYTESPERPIXEL(texture->format));
 	*pitch = vita_texture->pitch;
 	return 0;
 }
@@ -301,15 +299,19 @@ VITA_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static void
 VITA_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
+	// no needs to update texture data on ps vita ? VITA_LockTexture
+	// directly write to vita2d texture pixels buffer
+	/*
 	VITA_TextureData *vita_texture = (VITA_TextureData *) texture->driverdata;
 	SDL_Rect rect;
 
-	/* We do whole texture updates, at least for now */
+	// We do whole texture updates, at least for now
 	rect.x = 0;
 	rect.y = 0;
 	rect.w = texture->w;
 	rect.h = texture->h;
 	VITA_UpdateTexture(renderer, texture, &rect, vita_texture->data, vita_texture->pitch);
+	*/
 }
 
 static int
