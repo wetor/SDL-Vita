@@ -19,18 +19,16 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_pspvideo_h
-#define _SDL_pspvideo_h
+#ifndef _SDL_vitavideo_h
+#define _SDL_vitavideo_h
 
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
 typedef struct SDL_VideoData
 {
-    SDL_bool egl_initialized;   /* OpenGL ES device initialization status */
-    uint32_t egl_refcount;      /* OpenGL ES reference count              */
-
-
+	SDL_bool gl_initialized;   /* OpenGL device initialization status */
+	uint32_t gl_refcount;      /* OpenGL reference count              */
 
 } SDL_VideoData;
 
@@ -43,7 +41,7 @@ typedef struct SDL_DisplayData
 
 typedef struct SDL_WindowData
 {
-    SDL_bool uses_gles;         /* if true window must support OpenGL ES */
+    SDL_bool uses_gl;			/* if true window must support OpenGL */
 
 } SDL_WindowData;
 
@@ -77,6 +75,19 @@ void VITA_DestroyWindow(_THIS, SDL_Window * window);
 /* Window manager function */
 SDL_bool VITA_GetWindowWMInfo(_THIS, SDL_Window * window,
                              struct SDL_SysWMinfo *info);
+
+#if SDL_VIDEO_DRIVER_VITA_GL
+/* OpenGL functions */
+int VITA_GL_LoadLibrary(_THIS, const char *path);
+void *VITA_GL_GetProcAddress(_THIS, const char *proc);
+void VITA_GL_UnloadLibrary(_THIS);
+SDL_GLContext VITA_GL_CreateContext(_THIS, SDL_Window * window);
+int VITA_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+int VITA_GL_SetSwapInterval(_THIS, int interval);
+int VITA_GL_GetSwapInterval(_THIS);
+int VITA_GL_SwapWindow(_THIS, SDL_Window * window);
+void VITA_GL_DeleteContext(_THIS, SDL_GLContext context);
+#endif
 
 /* VITA on screen keyboard */
 SDL_bool VITA_HasScreenKeyboardSupport(_THIS);

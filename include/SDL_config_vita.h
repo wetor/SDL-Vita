@@ -24,8 +24,6 @@
 
 #include "SDL_platform.h"
 
-
-
 #ifdef __GNUC__
 #define HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 #endif
@@ -122,10 +120,18 @@
 /* Enable the stub audio driver (src/audio/vita/\*.c) */
 #define SDL_AUDIO_DRIVER_VITA    1
 
-/* VITA video dirver */
+/* VITA video driver */
 #define SDL_VIDEO_DRIVER_VITA   1
 
-/* VITA render dirver */
+/* VITA osmesa/gl driver */
+#define SDL_VIDEO_DRIVER_VITA_GL   1
+#ifdef SDL_VIDEO_DRIVER_VITA_GL
+#define HAVE_OPENGL 1
+//#define SDL_VIDEO_OPENGL 1
+//#define SDL_VIDEO_RENDER_OGL 1
+#endif
+
+/* VITA render driver */
 #define SDL_VIDEO_RENDER_VITA   1
 
 #define SDL_POWER_VITA          1

@@ -77,15 +77,17 @@ OBJS= src/SDL.o \
       src/video/SDL_surface.o \
       src/video/SDL_video.o \
       src/video/vita/SDL_vitavideo.o \
+      src/video/vita/SDL_vitagl.o \
       src/video/vita/SDL_vitamouse.o
+      #src/render/opengl/SDL_render_gl.o \
+      #src/render/opengl/SDL_shaders_gl.o \
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
 AR      = $(PREFIX)-gcc-ar
-CFLAGS  = -Wl,-q -Wall -O3 -Iinclude -D__VITA__ \
-			-D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
-			-mfpu=neon -mcpu=cortex-a9 \
-			-march=armv7-a -mfloat-abi=hard
+CFLAGS  = -g -Wl,-q -Wall -O3 -Iinclude \
+			-D__VITA__ -D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
+			-mfpu=neon -mcpu=cortex-a9 -march=armv7-a -mfloat-abi=hard
 ASFLAGS = $(CFLAGS)
 
 $(TARGET_LIB): $(OBJS)

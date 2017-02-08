@@ -32,10 +32,11 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 
-
-
 /* VITA declarations */
 #include "SDL_vitavideo.h"
+#if SDL_VIDEO_DRIVER_VITA_GL
+#include "SDL_vitagl.h"
+#endif
 
 /* unused
 static SDL_bool VITA_initialized = SDL_FALSE;
@@ -61,6 +62,9 @@ VITA_Create()
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
+#if SDL_VIDEO_DRIVER_VITA_GL
+    SDL_GLDriverData *gldata;
+#endif
     int status;
 
     /* Check if VITA could be initialized */
@@ -85,6 +89,17 @@ VITA_Create()
         return NULL;
     }
 
+#if SDL_VIDEO_DRIVER_VITA_GL
+	gldata = (SDL_GLDriverData *) SDL_calloc(1, sizeof(SDL_GLDriverData));
+    if (gldata == NULL) {
+        SDL_OutOfMemory();
+        SDL_free(device);
+        SDL_free(phdata);
+        return NULL;
+    }
+    device->gl_data = gldata;
+    phdata->gl_initialized = SDL_TRUE;
+#endif
 
     device->driverdata = phdata;
 
@@ -114,6 +129,17 @@ VITA_Create()
     device->SetWindowGrab = VITA_SetWindowGrab;
     device->DestroyWindow = VITA_DestroyWindow;
     device->GetWindowWMInfo = VITA_GetWindowWMInfo;
+#if SDL_VIDEO_DRIVER_VITA_GL
+	device->GL_LoadLibrary = VITA_GL_LoadLibrary;
+	device->GL_GetProcAddress = VITA_GL_GetProcAddress;
+    device->GL_UnloadLibrary = VITA_GL_UnloadLibrary;
+    device->GL_CreateContext = VITA_GL_CreateContext;
+    device->GL_MakeCurrent = VITA_GL_MakeCurrent;
+    device->GL_SetSwapInterval = VITA_GL_SetSwapInterval;
+    device->GL_GetSwapInterval = VITA_GL_GetSwapInterval;
+    device->GL_SwapWindow = VITA_GL_SwapWindow;
+    device->GL_DeleteContext = VITA_GL_DeleteContext;
+#endif
     device->HasScreenKeyboardSupport = VITA_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = VITA_ShowScreenKeyboard;
     device->HideScreenKeyboard = VITA_HideScreenKeyboard;
