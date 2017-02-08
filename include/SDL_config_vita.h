@@ -124,7 +124,8 @@
 #define SDL_VIDEO_DRIVER_VITA   1
 
 /* VITA osmesa/gl driver */
-#define SDL_VIDEO_DRIVER_VITA_GL   1
+// uncomment next line to enable osmesa/gl support
+//#define SDL_VIDEO_DRIVER_VITA_GL
 #ifdef SDL_VIDEO_DRIVER_VITA_GL
 #define HAVE_OPENGL 1
 //#define SDL_VIDEO_OPENGL 1
