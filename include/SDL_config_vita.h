@@ -125,11 +125,10 @@
 
 /* VITA osmesa/gl driver */
 // uncomment next line to enable osmesa/gl support
-//#define SDL_VIDEO_DRIVER_VITA_GL
+//#define SDL_VIDEO_DRIVER_VITA_GL 1
 #ifdef SDL_VIDEO_DRIVER_VITA_GL
 #define HAVE_OPENGL 1
-//#define SDL_VIDEO_OPENGL 1
-//#define SDL_VIDEO_RENDER_OGL 1
+#define SDL_VIDEO_OPENGL 1
 #endif
 
 /* VITA render driver */

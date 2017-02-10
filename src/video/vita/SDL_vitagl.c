@@ -73,12 +73,14 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
 	const GLint z = _this->gl_config.depth_size;
 	const GLint stencil = _this->gl_config.stencil_size;
 	const GLint accum = 0;
-	
+
 	_this->gl_config.red_size = 8;
 	_this->gl_config.green_size = 8;
 	_this->gl_config.blue_size = 8;
 	_this->gl_config.alpha_size = 8;
-	
+
+	_this->gl_config.accelerated = 1;
+
 	_this->gl_data->context = OSMesaCreateContextExt(OSMESA_RGBA, z, stencil, accum, NULL);
     if (!_this->gl_data->context) {
 		SDL_SetError("OSMesaCreateContextExt() failed!\n");
@@ -93,10 +95,10 @@ VITA_GL_CreateContext(_THIS, SDL_Window * window)
 		SDL_SetError("Unable to make GL context current (OSMesaMakeCurrent)");
         return 0;
     }
-	
+
 	wdata->uses_gl = SDL_TRUE;
 	window->flags |= SDL_WINDOW_FULLSCREEN;
-	
+
 	return _this->gl_data->context;
 }
 

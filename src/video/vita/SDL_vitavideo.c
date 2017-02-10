@@ -204,17 +204,6 @@ VITA_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     return 0;
 }
-#define EGLCHK(stmt)                            \
-    do {                                        \
-        EGLint err;                             \
-                                                \
-        stmt;                                   \
-        err = eglGetError();                    \
-        if (err != EGL_SUCCESS) {               \
-            SDL_SetError("EGL error %d", err);  \
-            return 0;                           \
-        }                                       \
-    } while (0)
 
 int
 VITA_CreateWindow(_THIS, SDL_Window * window)
