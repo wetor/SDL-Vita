@@ -61,7 +61,7 @@ VITA_PollTouch(void)
 	if (Vita_Window == NULL)
 		return;
 
-	SDL_FingerID fingerId = 0;
+	SDL_FingerID finger_id = 0;
 	int port;
 
 	memcpy(touch_old, touch, sizeof(touch_old));
@@ -72,7 +72,7 @@ VITA_PollTouch(void)
 		{
 			// Send an initial touch
 			SDL_SendTouch((SDL_TouchID)port, 
-				fingerId, 
+				finger_id, 
 				SDL_TRUE, 
 				touch[port].report[0].x, 
 				touch[port].report[0].y, 
@@ -80,7 +80,7 @@ VITA_PollTouch(void)
 
 			// Always send the motion
 			SDL_SendTouchMotion((SDL_TouchID)port, 
-				fingerId,
+				finger_id,
 				touch[port].report[0].x,
 				touch[port].report[0].y,
 				touch[port].report[0].force);
@@ -89,7 +89,7 @@ VITA_PollTouch(void)
 		{
 			// Finger released from screen
 			SDL_SendTouch((SDL_TouchID)port,
-				fingerId,
+				finger_id,
 				SDL_FALSE,
 				touch[port].report[0].x,
 				touch[port].report[0].y,
