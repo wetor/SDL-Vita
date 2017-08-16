@@ -34,9 +34,12 @@
 
 /* VITA declarations */
 #include "SDL_vitavideo.h"
+#include "SDL_vitatouch.h"
 #if SDL_VIDEO_DRIVER_VITA_GL
 #include "SDL_vitagl.h"
 #endif
+
+SDL_Window *Vita_Window;
 
 /* unused
 static SDL_bool VITA_initialized = SDL_FALSE;
@@ -183,6 +186,7 @@ VITA_VideoInit(_THIS)
     display.driverdata = NULL;
 
     SDL_AddVideoDisplay(&display);
+    VITA_InitTouch();
 
     return 1;
 }
@@ -190,7 +194,7 @@ VITA_VideoInit(_THIS)
 void
 VITA_VideoQuit(_THIS)
 {
-
+    VITA_QuitTouch();
 }
 
 void
@@ -218,6 +222,15 @@ VITA_CreateWindow(_THIS, SDL_Window * window)
 
     /* Setup driver data for this window */
     window->driverdata = wdata;
+
+    // Vita can only have one window
+    if (Vita_Window != NULL)
+    {
+        // Replace this with something else
+        return SDL_OutOfMemory();
+    }
+
+    Vita_Window = window;
 
     // fix input, we need to find a better way
     SDL_SetKeyboardFocus(window);
@@ -319,6 +332,7 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 
 void VITA_PumpEvents(_THIS)
 {
+    VITA_PollTouch();
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
