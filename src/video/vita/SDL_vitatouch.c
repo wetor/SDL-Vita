@@ -61,9 +61,8 @@ VITA_PollTouch(void)
 	if (Vita_Window == NULL)
 		return;
 
-	SDL_TouchID touchDeviceId = 0;
 	SDL_FingerID fingerId = 0;
-	int port, i;
+	int port;
 
 	memcpy(touch_old, touch, sizeof(touch_old));
 
