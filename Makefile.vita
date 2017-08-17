@@ -78,7 +78,8 @@ OBJS= src/SDL.o \
       src/video/SDL_video.o \
       src/video/vita/SDL_vitavideo.o \
       src/video/vita/SDL_vitagl.o \
-      src/video/vita/SDL_vitamouse.o
+      src/video/vita/SDL_vitamouse.o \
+      src/video/vita/SDL_vitatouch.o
       #src/render/opengl/SDL_render_gl.o \
       #src/render/opengl/SDL_shaders_gl.o \
 

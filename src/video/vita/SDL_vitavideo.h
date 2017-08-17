@@ -45,7 +45,7 @@ typedef struct SDL_WindowData
 
 } SDL_WindowData;
 
-
+extern SDL_Window * Vita_Window;
 
 
 /****************************************************************************/
