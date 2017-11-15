@@ -204,6 +204,7 @@ extern AudioBootStrap DUMMYAUDIO_bootstrap;
 extern AudioBootStrap FUSIONSOUND_bootstrap;
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
+extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 
 #endif /* SDL_sysaudio_h_ */
