@@ -25,6 +25,9 @@
 
 #include "SDL_platform.h"
 
+/* include stdint.h here, needed on Vita to compile the yuv_rgb.h */
+#include <stdint.h>
+
 #ifdef __GNUC__
 #define HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 #endif
