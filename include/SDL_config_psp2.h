@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-#define __PSP2__ 1
+#define __vita__ 1
 
 #ifdef __cplusplus
 extern "C" {

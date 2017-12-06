@@ -1,7 +1,7 @@
 # Makefile to build the SDL library
 
 INCLUDE = -I./include
-CFLAGS  = -Wl,-q -g -O3 -D__PSP2__ $(INCLUDE)
+CFLAGS  = -Wl,-q -g -O3 $(INCLUDE)
 
 CC	= arm-vita-eabi-gcc
 AR	= arm-vita-eabi-ar
@@ -32,8 +32,8 @@ SOURCES = \
 OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
 
 all: $(TARGET)
-	make -f Makefile.psp2-test clean
-	make -f Makefile.psp2-test
+	make -f Makefile.vita-test clean
+	make -f Makefile.vita-test
 
 $(TARGET): $(CONFIG_H) $(OBJECTS)
 	$(AR) crv $@ $^
@@ -44,7 +44,7 @@ $(CONFIG_H):
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
-	make -f Makefile.psp2-test clean
+	make -f Makefile.vita-test clean
 
 install: $(TARGET)
 	@cp  $(TARGET) $(VITASDK)/arm-vita-eabi/lib

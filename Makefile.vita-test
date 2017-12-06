@@ -9,7 +9,7 @@ LIBS = ./libSDL.a -lpsp2shell -lvita2d -lSceDisplay_stub -lSceGxm_stub \
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
-CFLAGS  = -Wl,-q -Wall -O3 -D__PSP2__ -Iinclude -I$(VITASDK)/arm-vita-eabi/include
+CFLAGS  = -Wl,-q -Wall -O3 -Iinclude -I$(VITASDK)/arm-vita-eabi/include
 ASFLAGS = $(CFLAGS)
 
 all: $(TARGET).vpk

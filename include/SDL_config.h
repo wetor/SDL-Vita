@@ -38,7 +38,7 @@
 #include "SDL_config_win32.h"
 #elif defined(__OS2__)
 #include "SDL_config_os2.h"
-#elif defined(__PSP2__)
+#elif defined(__vita__)
 #include "SDL_config_psp2.h"
 #else
 #include "SDL_config_minimal.h"
