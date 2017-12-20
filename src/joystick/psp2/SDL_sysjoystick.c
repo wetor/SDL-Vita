@@ -53,9 +53,10 @@ typedef struct
 } point;
 
 /* 4 points define the bezier-curve. */
+/* The Vita has a good amount of analog travel, so use a linear curve */
 static point a = { 0, 0 };
-static point b = { 50, 0  };
-static point c = { 78, 32767 };
+static point b = { 0, 0  };
+static point c = { 128, 32767 };
 static point d = { 128, 32767 };
 
 /* simple linear interpolation between two points */
@@ -126,16 +127,16 @@ int SDL_SYS_JoystickInit(void)
 const char *SDL_SYS_JoystickName(int index)
 {
 	if (index == 0)
-        return "psp2 controller";
+        return "PSVita Controller";
 
 	if (index == 1)
-        return "psp2 controller";
+        return "PSVita Controller";
 	
 	if (index == 2)
-        return "psp2 controller";
+        return "PSVita Controller";
 
 	if (index == 3)
-        return "psp2 controller";
+        return "PSVIta Controller";
 	
     SDL_SetError("No joystick available with that index");
     return(NULL);
