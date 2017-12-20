@@ -142,15 +142,15 @@ void SDL_SYS_JoystickDetect()
 const char * SDL_SYS_JoystickNameForDeviceIndex(int device_index)
 {
    if (device_index == 1)
-		return "PSVita controller 2";
+		return "PSVita Controller";
 
 	if (device_index == 2)
-		return "PSVita controller 3";
+		return "PSVita Controller";
 
 	if (device_index == 3)
-		return "PSVita controller 4";
+		return "PSVita Controller";
 
-   return "PSVita controller";
+   return "PSVita Controller";
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
@@ -163,16 +163,16 @@ SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
 const char *SDL_SYS_JoystickName(int index)
 {
 	if (index == 0)
-   	return "PSVita controller";
+   	return "PSVita Controller";
 
 	if (index == 1)
-   	return "PSVita controller 2";
+   	return "PSVita Controller";
 
 	if (index == 2)
-   	return "PSVita controller 3";
+   	return "PSVita Controller";
 
 	if (index == 3)
-   	return "PSVita controller 4";
+   	return "PSVita Controller";
 
     SDL_SetError("No joystick available with that index");
     return(NULL);
