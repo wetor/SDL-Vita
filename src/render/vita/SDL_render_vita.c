@@ -124,19 +124,20 @@ typedef struct
 	unsigned int	h;
 } VITA_TextureData;
 
-/*
+
 static int
 GetScaleQuality(void)
 {
 	const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
 
 	if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-		return SCE_GXM_TEXTURE_FILTER_POINT; // GU_NEAREST good for tile-map
+		return SCE_GXM_TEXTURE_FILTER_POINT; // good for tile-map
 	} else {
-		return SCE_GXM_TEXTURE_FILTER_LINEAR; // GU_LINEAR good for scaling
+		return SCE_GXM_TEXTURE_FILTER_LINEAR; // good for scaling
 	}
 }
 
+/*
 static int
 PixelFormatToVITAFMT(Uint32 format)
 {
@@ -247,6 +248,15 @@ VITA_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 		SDL_free(vita_texture);
 		return SDL_OutOfMemory();
 	}
+
+	/* 
+	set texture filtering according to SDL_HINT_RENDER_SCALE_QUALITY
+	suported hint values are nearest (0, default) or linear (1)
+	scaleMode is either SCE_GXM_TEXTURE_FILTER_POINT (good for tile-map)
+	or SCE_GXM_TEXTURE_FILTER_LINEAR (good for scaling)
+	*/
+	int scaleMode = GetScaleQuality();
+	vita2d_texture_set_filters(vita_texture->tex, scaleMode, scaleMode); 
 
 	vita_texture->w = vita2d_texture_get_width(vita_texture->tex);
 	vita_texture->h = vita2d_texture_get_height(vita_texture->tex);
