@@ -446,6 +446,8 @@ SDL_GetPlatform()
     return "iOS";
 #elif __PSP__
     return "PlayStation Portable";
+#elif __vita__
+    return "PlayStation Vita";
 #else
     return "Unknown (see SDL_platform.h)";
 #endif
