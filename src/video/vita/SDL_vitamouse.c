@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,19 +22,69 @@
 
 #if SDL_VIDEO_DRIVER_VITA
 
-#include <stdio.h>
+#include <psp2/kernel/processmgr.h>
+#include <psp2/ctrl.h>
+#include <psp2/hid.h>
 
-#include "SDL_error.h"
+#include "SDL_events.h"
+#include "SDL_log.h"
 #include "SDL_mouse.h"
-#include "../../events/SDL_events_c.h"
-
+#include "SDL_vitavideo.h"
 #include "SDL_vitamouse_c.h"
+#include "../../events/SDL_mouse_c.h"
 
+SceHidMouseReport m_reports[SCE_HID_MAX_REPORT];
+int mouse_hid_handle = 0;
+Uint8 prev_buttons = 0;
 
-/* The implementation dependent data for the window manager cursor */
-struct WMcursor {
-    int unused;
-};
+void 
+VITA_InitMouse(void)
+{
+	sceHidMouseEnumerate(&mouse_hid_handle, 1);
+}
+
+void 
+VITA_PollMouse(void)
+{
+	// We skip polling mouse if no window is created
+	if (Vita_Window == NULL)
+		return;
+
+	if (mouse_hid_handle > 0)
+	{
+		int ret = sceHidMouseRead(mouse_hid_handle, (SceHidMouseReport**)&m_reports, 1);
+		if (ret > 0)
+		{	
+			Uint8 changed_buttons = m_reports[0].buttons ^ prev_buttons;
+			
+			if (changed_buttons & 0x1) {
+				if (prev_buttons & 0x1)
+					SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_LEFT);
+				else
+					SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_LEFT);
+			}
+			if (changed_buttons & 0x2) {
+				if (prev_buttons & 0x2)
+					SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_RIGHT);
+				else
+					SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_RIGHT);
+			}
+			if (changed_buttons & 0x4) {
+				if (prev_buttons & 0x4)
+					SDL_SendMouseButton(Vita_Window, 0, SDL_RELEASED, SDL_BUTTON_MIDDLE);
+				else
+					SDL_SendMouseButton(Vita_Window, 0, SDL_PRESSED, SDL_BUTTON_MIDDLE);
+			}
+
+			prev_buttons = m_reports[0].buttons;
+
+//			if (m_reports[0].rel_x || m_reports[0].rel_y) 
+//			{
+			SDL_SendMouseMotion(Vita_Window, 0, 1, m_reports[0].rel_x, m_reports[0].rel_y);
+//			}
+		}
+	}
+}
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
 

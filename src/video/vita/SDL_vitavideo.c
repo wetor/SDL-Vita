@@ -35,6 +35,8 @@
 /* VITA declarations */
 #include "SDL_vitavideo.h"
 #include "SDL_vitatouch.h"
+#include "SDL_vitakeyboard.h"
+#include "SDL_vitamouse_c.h"
 #if SDL_VIDEO_DRIVER_VITA_GL
 #include "SDL_vitagl.h"
 #endif
@@ -187,6 +189,8 @@ VITA_VideoInit(_THIS)
 
     SDL_AddVideoDisplay(&display);
     VITA_InitTouch();
+    VITA_InitKeyboard();
+    VITA_InitMouse();
 
     return 1;
 }
@@ -333,6 +337,8 @@ SDL_bool VITA_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 void VITA_PumpEvents(_THIS)
 {
     VITA_PollTouch();
+    VITA_PollKeyboard();
+	VITA_PollMouse();
 }
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
