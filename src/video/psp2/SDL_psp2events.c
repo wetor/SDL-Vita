@@ -30,10 +30,13 @@
 
 #include "SDL_psp2video.h"
 #include "SDL_psp2events_c.h"
+#include "SDL_psp2keyboard_c.h"
+#include "SDL_psp2mouse_c.h"
 
 void PSP2_PumpEvents(_THIS)
 {
-	/* do nothing. */
+	PSP2_PollKeyboard();
+	PSP2_PollMouse();
 }
 
 void PSP2_InitOSKeymap(_THIS)

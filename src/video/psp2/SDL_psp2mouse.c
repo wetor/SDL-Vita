@@ -21,13 +21,63 @@
 */
 #include "SDL_config.h"
 
+#include <psp2/kernel/processmgr.h>
+#include <psp2/ctrl.h>
+#include <psp2/hid.h>
+
 #include "SDL_mouse.h"
 #include "../../events/SDL_events_c.h"
+#include "../../events/SDL_sysevents.h"
 
+#include "SDL_psp2video.h"
 #include "SDL_psp2mouse_c.h"
 
+SceHidMouseReport m_reports[SCE_HID_MAX_REPORT];
+int mouse_hid_handle = 0;
+Uint8 prev_buttons = 0;
 
-/* The implementation dependent data for the window manager cursor */
-struct WMcursor {
-	int unused;
-};
+void 
+PSP2_InitMouse(void)
+{
+	sceHidMouseEnumerate(&mouse_hid_handle, 1);
+}
+
+void 
+PSP2_PollMouse(void)
+{
+	if (mouse_hid_handle > 0)
+	{
+		int ret = sceHidMouseRead(mouse_hid_handle, (SceHidMouseReport**)&m_reports, 1);
+		if (ret > 0)
+		{	
+			Uint8 changed_buttons = m_reports[0].buttons ^ prev_buttons;
+			
+			if (changed_buttons & 0x1) {
+				if (prev_buttons & 0x1)
+					SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
+				else
+					SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_LEFT, 0, 0);
+			}
+			if (changed_buttons & 0x2) {
+				if (prev_buttons & 0x2)
+					SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0);
+				else
+					SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_RIGHT, 0, 0);
+			}
+			if (changed_buttons & 0x4) {
+				if (prev_buttons & 0x4)
+					SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_MIDDLE, 0, 0);
+				else
+					SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_MIDDLE, 0, 0);
+			}
+
+			prev_buttons = m_reports[0].buttons;
+
+			if (m_reports[0].rel_x || m_reports[0].rel_y) 
+			{
+				SDL_PrivateMouseMotion(0, 1, m_reports[0].rel_x, m_reports[0].rel_y);
+			}
+		}
+	}
+}
+

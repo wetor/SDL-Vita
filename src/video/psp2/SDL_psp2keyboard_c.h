@@ -21,13 +21,12 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_PSP2MOUSE_H_
-#define _SDL_PSP2MOUSE_H_
-
-#include "SDL_psp2video.h"
+#ifndef _SDL_PSP2KEYBOARD_H_
+#define _SDL_PSP2KEYBOARD_H_
 
 /* Functions to be exported */
-extern void PSP2_InitMouse();
-extern void PSP2_PollMouse();
+extern void PSP2_InitKeyboard();
+extern void PSP2_PollKeyboard();
+extern SDL_keysym *PSP2_TranslateKey(int scancode, SDL_keysym *keysym, SDL_bool pressed);
 
-#endif /* _SDL_PSP2MOUSE_H_ */
+#endif /* _SDL_PSP2KEYBOARD_H_ */
