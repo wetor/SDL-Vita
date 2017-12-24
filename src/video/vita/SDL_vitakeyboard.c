@@ -37,6 +37,7 @@ int keyboard_hid_handle = 0;
 Uint8 prev_keys[6] = {0};
 Uint8 prev_modifiers = 0;
 Uint8 locks = 0;
+Uint8 lock_key_down = 0;
 
 void 
 VITA_InitKeyboard(void)
@@ -59,7 +60,8 @@ VITA_PollKeyboard(void)
 			keyboard_hid_handle = 0;
 		}
 		else if (numReports) {
-
+			// Numlock and Capslock state changes only on a SDL_PRESSED event
+			// The k_report only reports the state of the LED
 			if (k_reports[numReports-1].modifiers[1] & 0x1) {
 				if (!(locks & 0x1)) {
 					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
@@ -68,6 +70,8 @@ VITA_PollKeyboard(void)
 			}
 			else {
 				if (locks & 0x1) {
+					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
+					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
 					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
 					locks &= ~0x1;
 				}
@@ -82,7 +86,9 @@ VITA_PollKeyboard(void)
 			else {
 				if (locks & 0x2) {
 					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-					locks &= 0x2;
+					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+					SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+					locks &= ~0x2;
 				}
 			}
 
