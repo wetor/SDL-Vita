@@ -174,8 +174,9 @@ VITA_PollKeyboard(void)
 
 				if (keyCode != prev_keys[i]) {
 
-					SDL_SendKeyboardKey(SDL_RELEASED, keyCode);
-
+					if (prev_keys[i]) {
+						SDL_SendKeyboardKey(SDL_RELEASED, prev_keys[i]);
+					}
 					if (keyCode) {
 						SDL_SendKeyboardKey(SDL_PRESSED, keyCode);
 					}
