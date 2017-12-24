@@ -244,7 +244,7 @@ PSP2_PollKeyboard(void)
 
 				if (keyCode != prev_keys[i]) {
 
-					SDL_PrivateKeyboard(SDL_RELEASED, PSP2_TranslateKey(keyCode, &keysym, 0));
+					SDL_PrivateKeyboard(SDL_RELEASED, PSP2_TranslateKey(prev_keys[i], &keysym, 0));
 
 					if (keyCode) {
 						SDL_PrivateKeyboard(SDL_PRESSED, PSP2_TranslateKey(keyCode, &keysym, 1));
