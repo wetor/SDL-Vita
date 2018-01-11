@@ -38,7 +38,7 @@ Uint8 prev_keys[6] = {0};
 Uint8 prev_modifiers = 0;
 Uint8 locks = 0;
 
-const int numkeys = 0xE8;
+const Uint8 numkeys = 0xE8;
 const int keymap[0xE8] = {
 	0, 0, 0, 0, SDLK_a, SDLK_b, SDLK_c, SDLK_d,
 	SDLK_e, SDLK_f, SDLK_g, SDLK_h, SDLK_i, SDLK_j, SDLK_k, SDLK_l,
@@ -90,8 +90,7 @@ SDL_keysym *PSP2_TranslateKey(int scancode, SDL_keysym *keysym, SDL_bool pressed
 	int translated_keysym = SDLK_UNKNOWN;
 
 	if (scancode < numkeys)
-		if (keymap[scancode] != 255)
-			translated_keysym = keymap[scancode];
+		translated_keysym = keymap[scancode];
 		
 	/* Set the keysym information */
 	keysym->scancode = scancode;
