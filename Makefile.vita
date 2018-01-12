@@ -88,7 +88,7 @@ OBJS= src/SDL.o \
 
 PREFIX  = arm-vita-eabi
 CC      = $(PREFIX)-gcc
-AR      = $(PREFIX)-gcc-ar
+AR      = $(PREFIX)-ar
 CFLAGS  = -g -Wl,-q -Wall -O3 -Iinclude \
 			-D__VITA__ -D__ARM_ARCH=7 -D__ARM_ARCH_7A__ \
 			-mfpu=neon -mcpu=cortex-a9 -march=armv7-a -mfloat-abi=hard
