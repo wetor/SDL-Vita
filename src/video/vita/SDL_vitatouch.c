@@ -35,6 +35,12 @@
 SceTouchData touch_old[SCE_TOUCH_PORT_MAX_NUM];
 SceTouchData touch[SCE_TOUCH_PORT_MAX_NUM];
 
+SceTouchPanelInfo panelinfo[SCE_TOUCH_PORT_MAX_NUM];
+
+float width[SCE_TOUCH_PORT_MAX_NUM];
+float height[SCE_TOUCH_PORT_MAX_NUM];
+float forcerange[SCE_TOUCH_PORT_MAX_NUM];
+
 void 
 VITA_InitTouch(void)
 {
@@ -42,6 +48,14 @@ VITA_InitTouch(void)
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
 	sceTouchEnableTouchForce(SCE_TOUCH_PORT_FRONT);
 	sceTouchEnableTouchForce(SCE_TOUCH_PORT_BACK);
+
+	SceTouchPanelInfo panelinfo[SCE_TOUCH_PORT_MAX_NUM];
+	for(int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+		sceTouchGetPanelInfo(port, &panelinfo[port]);
+		width[port] = (float)(panelinfo[port].maxAaX - panelinfo[port].minAaX);
+		height[port] = (float)(panelinfo[port].maxAaY - panelinfo[port].minAaY);
+		forcerange[port] = (float)(panelinfo[port].maxForce - panelinfo[port].minForce);
+	}
 
 	// Support passing both front and back touch devices in events
 	SDL_AddTouch((SDL_TouchID)0, "Front");
@@ -68,32 +82,57 @@ VITA_PollTouch(void)
 
 	for(port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
 		sceTouchPeek(port, &touch[port], 1);
-		if (touch[port].reportNum > 0)
-		{
-			// Send an initial touch
-			SDL_SendTouch((SDL_TouchID)port, 
-				finger_id, 
-				SDL_TRUE, 
-				touch[port].report[0].x, 
-				touch[port].report[0].y, 
-				touch[port].report[0].force);
+		if (touch[port].reportNum > 0) {
+			for (int i = 0; i < touch[port].reportNum; i++)
+			{
+				// normalize coordinates and forces
+				float x = (touch[port].report[i].x - panelinfo[port].minAaX) / width[port];
+				float y = (touch[port].report[i].y - panelinfo[port].minAaY) / height[port];
+				float force = (touch[port].report[i].force - panelinfo[port].minForce) / forcerange[port];
+				finger_id = (SDL_FingerID) touch[port].report[i].id;
 
-			// Always send the motion
-			SDL_SendTouchMotion((SDL_TouchID)port, 
-				finger_id,
-				touch[port].report[0].x,
-				touch[port].report[0].y,
-				touch[port].report[0].force);
+				// Send an initial touch
+				SDL_SendTouch((SDL_TouchID)port,
+					finger_id,
+					SDL_TRUE,
+					x,
+					y,
+					force);
+
+				// Always send the motion
+				SDL_SendTouchMotion((SDL_TouchID)port,
+					finger_id,
+					x,
+					y,
+					force);
+			}
 		}
-		else if (touch_old[port].reportNum > 0)
-		{
-			// Finger released from screen
-			SDL_SendTouch((SDL_TouchID)port,
-				finger_id,
-				SDL_FALSE,
-				touch[port].report[0].x,
-				touch[port].report[0].y,
-				touch[port].report[0].force);
+
+		// some fingers might have been let go
+		if (touch_old[port].reportNum > 0) {
+			for (int i = 0; i < touch_old[port].reportNum; i++) {
+				int finger_up = 1;
+				if (touch[port].reportNum > 0) {
+					for (int j = 0; j < touch[port].reportNum; j++) {
+						if (touch[port].report[j].id == touch_old[port].report[i].id ) {
+							finger_up = 0;
+						}
+					}
+				}
+				if (finger_up == 1) {
+					float x = (touch_old[port].report[i].x - panelinfo[port].minAaX) / width[port];
+					float y = (touch_old[port].report[i].y - panelinfo[port].minAaY) / height[port];
+					float force = (touch_old[port].report[i].force - panelinfo[port].minForce) / forcerange[port];
+					finger_id = (SDL_FingerID) touch_old[port].report[i].id;
+					// Finger released from screen
+					SDL_SendTouch((SDL_TouchID)port,
+						finger_id,
+						SDL_FALSE,
+						x,
+						y,
+						force);
+				}
+			}
 		}
 	}
 }
