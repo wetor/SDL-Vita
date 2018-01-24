@@ -37,8 +37,10 @@ SceTouchData touch[SCE_TOUCH_PORT_MAX_NUM];
 
 SceTouchPanelInfo panelinfo[SCE_TOUCH_PORT_MAX_NUM];
 
-float width[SCE_TOUCH_PORT_MAX_NUM];
-float height[SCE_TOUCH_PORT_MAX_NUM];
+float aAWidth[SCE_TOUCH_PORT_MAX_NUM];
+float aAHeight[SCE_TOUCH_PORT_MAX_NUM];
+float dispWidth[SCE_TOUCH_PORT_MAX_NUM];
+float dispHeight[SCE_TOUCH_PORT_MAX_NUM];
 float forcerange[SCE_TOUCH_PORT_MAX_NUM];
 
 void 
@@ -52,8 +54,10 @@ VITA_InitTouch(void)
 	SceTouchPanelInfo panelinfo[SCE_TOUCH_PORT_MAX_NUM];
 	for(int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
 		sceTouchGetPanelInfo(port, &panelinfo[port]);
-		width[port] = (float)(panelinfo[port].maxAaX - panelinfo[port].minAaX);
-		height[port] = (float)(panelinfo[port].maxAaY - panelinfo[port].minAaY);
+		aAWidth[port] = (float)(panelinfo[port].maxAaX - panelinfo[port].minAaX);
+		aAHeight[port] = (float)(panelinfo[port].maxAaY - panelinfo[port].minAaY);
+		dispWidth[port] = (float)(panelinfo[port].maxDispX - panelinfo[port].minDispX);
+		dispHeight[port] = (float)(panelinfo[port].maxDispY - panelinfo[port].minDispY);
 		forcerange[port] = (float)(panelinfo[port].maxForce - panelinfo[port].minForce);
 	}
 
@@ -85,9 +89,13 @@ VITA_PollTouch(void)
 		if (touch[port].reportNum > 0) {
 			for (int i = 0; i < touch[port].reportNum; i++)
 			{
-				// normalize coordinates and forces
-				float x = (touch[port].report[i].x - panelinfo[port].minAaX) / width[port];
-				float y = (touch[port].report[i].y - panelinfo[port].minAaY) / height[port];
+				// adjust coordinates and forces to return normalized values
+				// for the front, screen area is used as a reference (for direct touch)
+				// e.g. touch_x = 1.0 corresponds to screen_x = 960
+				// for the back panel, the active touch area is used as reference
+				float x = 0;
+				float y = 0;
+				VITA_ConvertTouchXYToSDLXY(&x, &y, touch[port].report[i].x, touch[port].report[i].y, port);
 				float force = (touch[port].report[i].force - panelinfo[port].minForce) / forcerange[port];
 				finger_id = (SDL_FingerID) touch[port].report[i].id;
 
@@ -120,8 +128,9 @@ VITA_PollTouch(void)
 					}
 				}
 				if (finger_up == 1) {
-					float x = (touch_old[port].report[i].x - panelinfo[port].minAaX) / width[port];
-					float y = (touch_old[port].report[i].y - panelinfo[port].minAaY) / height[port];
+					float x = 0;
+					float y = 0;
+					VITA_ConvertTouchXYToSDLXY(&x, &y, touch_old[port].report[i].x, touch_old[port].report[i].y, port);
 					float force = (touch_old[port].report[i].force - panelinfo[port].minForce) / forcerange[port];
 					finger_id = (SDL_FingerID) touch_old[port].report[i].id;
 					// Finger released from screen
@@ -136,6 +145,31 @@ VITA_PollTouch(void)
 		}
 	}
 }
+
+void VITA_ConvertTouchXYToSDLXY(float *sdl_x, float *sdl_y, int vita_x, int vita_y, int port) {
+	float x = 0;
+	float y = 0;
+	if (port == SCE_TOUCH_PORT_FRONT) {
+		x = (vita_x - panelinfo[port].minDispX) / dispWidth[port];
+		y = (vita_y - panelinfo[port].minDispY) / dispHeight[port];
+	} else {
+		x = (vita_x - panelinfo[port].minAaX) / aAWidth[port];
+		y = (vita_y - panelinfo[port].minAaY) / aAHeight[port];				
+	}
+	if (x < 0.0) {
+		x = 0.0;
+	} else if (x > 1.0) {
+		x = 1.0;
+	}
+	if (y < 0.0) {
+		y = 0.0;
+	} else if (y > 1.0) {
+		y = 1.0;
+	}
+	*sdl_x = x;
+	*sdl_y = y;
+}
+
 
 #endif /* SDL_VIDEO_DRIVER_VITA */
 
