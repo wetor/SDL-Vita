@@ -98,15 +98,10 @@ SDL_keysym *PSP2_TranslateKey(int scancode, SDL_keysym *keysym, SDL_bool pressed
 	keysym->sym = translated_keysym;
 	keysym->unicode = 0;
 
-	/*
-	if (keysym->sym == SDLK_UNKNOWN) {
-		keysym->sym = asciicode = keytab_normal[scancode];		
+	if (SDL_TranslateUNICODE && pressed && translated_keysym <= 127) {
+		keysym->unicode = translated_keysym;
 	}
 
-	if (SDL_TranslateUNICODE && pressed) {
-		keysym->unicode = SDL_AtariToUnicodeTable[asciicode];
-	}
-	*/
 	return(keysym);
 }
 
