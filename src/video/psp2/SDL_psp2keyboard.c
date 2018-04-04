@@ -126,7 +126,7 @@ PSP2_PollKeyboard(void)
 		}
 		else if (numReports) {
 
-			if (k_reports[numReports-1].modifiers[1] & 0x1) {
+			if (k_reports[numReports - 1].modifiers[1] & 0x1) {
 				if (!(locks & 0x1)) {
 					SDL_PrivateKeyboard(SDL_PRESSED, PSP2_TranslateKey(SCANCODE_NUMLOCKCLEAR, &keysym, 1));
 					locks |= 0x1;
@@ -139,7 +139,7 @@ PSP2_PollKeyboard(void)
 				}
 			}
 
-			if (k_reports[numReports-1].modifiers[1] & 0x2) {
+			if (k_reports[numReports - 1].modifiers[1] & 0x2) {
 				if (!(locks & 0x2)) {
 					SDL_PrivateKeyboard(SDL_PRESSED, PSP2_TranslateKey(SCANCODE_CAPSLOCK, &keysym, 1));
 					locks |= 0x2;
@@ -152,7 +152,7 @@ PSP2_PollKeyboard(void)
 				}
 			}
 
-			if (k_reports[numReports-1].modifiers[1] & 0x4) {
+			if (k_reports[numReports - 1].modifiers[1] & 0x4) {
 				if (!(locks & 0x4)) {
 					SDL_PrivateKeyboard(SDL_PRESSED, PSP2_TranslateKey(SCANCODE_SCROLLLOCK, &keysym, 1));
 					locks |= 0x4;
@@ -165,7 +165,7 @@ PSP2_PollKeyboard(void)
 				}
 			}
 
-			Uint8 changed_modifiers = k_reports[numReports-1].modifiers[0] ^ prev_modifiers;
+			Uint8 changed_modifiers = k_reports[numReports - 1].modifiers[0] ^ prev_modifiers;
 
 			if (changed_modifiers & 0x01) {
 				if (prev_modifiers & 0x01) {
@@ -232,11 +232,11 @@ PSP2_PollKeyboard(void)
 				}
 			}
 
-			prev_modifiers = k_reports[numReports-1].modifiers[0];
+			prev_modifiers = k_reports[numReports - 1].modifiers[0];
 
 			for (int i = 0; i < 6; i++) {
 
-				int keyCode = k_reports[numReports-1].keycodes[i];
+				int keyCode = k_reports[numReports - 1].keycodes[i];
 
 				if (keyCode != prev_keys[i]) {
 					if (prev_keys[i]) {
