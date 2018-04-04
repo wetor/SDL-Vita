@@ -62,7 +62,7 @@ VITA_PollKeyboard(void)
 		else if (numReports) {
 			// Numlock and Capslock state changes only on a SDL_PRESSED event
 			// The k_report only reports the state of the LED
-			if (k_reports[numReports-1].modifiers[1] & 0x1) {
+			if (k_reports[numReports - 1].modifiers[1] & 0x1) {
 				if (!(locks & 0x1)) {
 					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
 					locks |= 0x1;
@@ -77,7 +77,7 @@ VITA_PollKeyboard(void)
 				}
 			}
 
-			if (k_reports[numReports-1].modifiers[1] & 0x2) {
+			if (k_reports[numReports - 1].modifiers[1] & 0x2) {
 				if (!(locks & 0x2)) {
 					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
 					locks |= 0x2;
@@ -92,7 +92,7 @@ VITA_PollKeyboard(void)
 				}
 			}
 
-			if (k_reports[numReports-1].modifiers[1] & 0x4) {
+			if (k_reports[numReports - 1].modifiers[1] & 0x4) {
 				if (!(locks & 0x4)) {
 					SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_SCROLLLOCK);
 					locks |= 0x4;
@@ -105,7 +105,7 @@ VITA_PollKeyboard(void)
 				}
 			}
 
-			Uint8 changed_modifiers = k_reports[numReports-1].modifiers[0] ^ prev_modifiers;
+			Uint8 changed_modifiers = k_reports[numReports - 1].modifiers[0] ^ prev_modifiers;
 
 			if (changed_modifiers & 0x01) {
 				if (prev_modifiers & 0x01) {
@@ -172,11 +172,11 @@ VITA_PollKeyboard(void)
 				}
 			}
 
-			prev_modifiers = k_reports[numReports-1].modifiers[0];
+			prev_modifiers = k_reports[numReports - 1].modifiers[0];
 
 			for (int i = 0; i < 6; i++) {
 
-				int keyCode = k_reports[numReports-1].keycodes[i];
+				int keyCode = k_reports[numReports - 1].keycodes[i];
 
 				if (keyCode != prev_keys[i]) {
 
