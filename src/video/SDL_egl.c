@@ -1,6 +1,6 @@
 /*
  *  Simple DirectMedia Layer
- *  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+ *  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
  * 
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the authors be held liable for any damages
@@ -44,12 +44,12 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
-#define DEFAULT_EGL ( vc4 ? "libEGL.so.1" : "/opt/vc/lib/libbrcmEGL.so" )
-#define DEFAULT_OGL_ES2 ( vc4 ? "libGLESv2.so.2" : "/opt/vc/lib/libbrcmGLESv2.so" )
-#define ALT_EGL "/opt/vc/lib/libEGL.so"
-#define ALT_OGL_ES2 "/opt/vc/lib/libGLESv2.so"
-#define DEFAULT_OGL_ES_PVR ( vc4 ? "libGLES_CM.so.1" : "/opt/vc/lib/libbrcmGLESv2.so" )
-#define DEFAULT_OGL_ES ( vc4 ? "libGLESv1_CM.so.1" : "/opt/vc/lib/libbrcmGLESv2.so" )
+#define DEFAULT_EGL ( vc4 ? "libEGL.so.1" : "libbrcmEGL.so" )
+#define DEFAULT_OGL_ES2 ( vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so" )
+#define ALT_EGL "libEGL.so"
+#define ALT_OGL_ES2 "libGLESv2.so"
+#define DEFAULT_OGL_ES_PVR ( vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so" )
+#define DEFAULT_OGL_ES ( vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so" )
 
 #elif SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_VIVANTE
 /* Android */
@@ -504,18 +504,6 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = _this->gl_config.multisamplesamples;
     }
 
-    if (_this->gl_config.framebuffer_srgb_capable) {
-#ifdef EGL_KHR_gl_colorspace
-        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
-            attribs[i++] = EGL_GL_COLORSPACE_KHR;
-            attribs[i++] = EGL_GL_COLORSPACE_SRGB_KHR;
-        } else
-#endif
-        {
-            return SDL_SetError("EGL implementation does not support sRGB system framebuffers");
-        }
-    }
-
     attribs[i++] = EGL_RENDERABLE_TYPE;
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #ifdef EGL_KHR_create_context
@@ -784,6 +772,10 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
+    /* max 2 values plus terminator. */
+    EGLint attribs[3];
+    int attr = 0;
+	
     EGLSurface * surface;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
@@ -803,11 +795,25 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
     }
 #endif    
+    if (_this->gl_config.framebuffer_srgb_capable) {
+#ifdef EGL_KHR_gl_colorspace
+        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
+            attribs[attr++] = EGL_GL_COLORSPACE_KHR;
+            attribs[attr++] = EGL_GL_COLORSPACE_SRGB_KHR;
+        } else
+#endif
+        {
+            SDL_SetError("EGL implementation does not support sRGB system framebuffers");
+            return EGL_NO_SURFACE;
+        }
+    }
+	
+    attribs[attr++] = EGL_NONE;
     
     surface = _this->egl_data->eglCreateWindowSurface(
             _this->egl_data->egl_display,
             _this->egl_data->egl_config,
-            nw, NULL);
+            nw, &attribs[0]);
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }

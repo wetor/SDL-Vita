@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -522,6 +522,8 @@ extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
 extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_log(double x);
 extern DECLSPEC float SDLCALL SDL_logf(float x);
+extern DECLSPEC double SDLCALL SDL_log10(double x);
+extern DECLSPEC float SDLCALL SDL_log10f(float x);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
 extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);

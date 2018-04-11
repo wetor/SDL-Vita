@@ -3,10 +3,12 @@ package org.libsdl.app;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.lang.reflect.Method;
 
 import android.app.*;
 import android.content.*;
+import android.content.res.Configuration;
 import android.text.InputType;
 import android.view.*;
 import android.view.inputmethod.BaseInputConnection;
@@ -36,6 +38,21 @@ public class SDLActivity extends Activity {
 
     public static boolean mIsResumedCalled, mIsSurfaceReady, mHasFocus;
 
+    // Cursor types
+    private static final int SDL_SYSTEM_CURSOR_NONE = -1;
+    private static final int SDL_SYSTEM_CURSOR_ARROW = 0;
+    private static final int SDL_SYSTEM_CURSOR_IBEAM = 1;
+    private static final int SDL_SYSTEM_CURSOR_WAIT = 2;
+    private static final int SDL_SYSTEM_CURSOR_CROSSHAIR = 3;
+    private static final int SDL_SYSTEM_CURSOR_WAITARROW = 4;
+    private static final int SDL_SYSTEM_CURSOR_SIZENWSE = 5;
+    private static final int SDL_SYSTEM_CURSOR_SIZENESW = 6;
+    private static final int SDL_SYSTEM_CURSOR_SIZEWE = 7;
+    private static final int SDL_SYSTEM_CURSOR_SIZENS = 8;
+    private static final int SDL_SYSTEM_CURSOR_SIZEALL = 9;
+    private static final int SDL_SYSTEM_CURSOR_NO = 10;
+    private static final int SDL_SYSTEM_CURSOR_HAND = 11;
+
     // Handle the state of the native layer
     public enum NativeState {
            INIT, RESUMED, PAUSED
@@ -60,6 +77,8 @@ public class SDLActivity extends Activity {
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
     protected static SDLClipboardHandler mClipboardHandler;
+    protected static Hashtable<Integer, Object> mCursors;
+    protected static int mLastCursorID;
 
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
@@ -132,6 +151,8 @@ public class SDLActivity extends Activity {
         mTextEdit = null;
         mLayout = null;
         mClipboardHandler = null;
+        mCursors = new Hashtable<Integer, Object>();
+        mLastCursorID = 0;
         mSDLThread = null;
         mExitCalledFromJava = false;
         mBrokenLibraries = false;
@@ -212,19 +233,7 @@ public class SDLActivity extends Activity {
 
         setContentView(mLayout);
 
-        /* 
-         * Per SDL_androidwindow.c, Android will only ever have one window, and that window 
-         * is always flagged SDL_WINDOW_FULLSCREEN.  Let's treat it as an immersive fullscreen 
-         * window for Android UI purposes, as a result.
-         */
-        int iFlags = 
-            //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | // Only available since API 19
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-            View.SYSTEM_UI_FLAG_FULLSCREEN;
-
-        getWindow().getDecorView().setSystemUiVisibility(iFlags);        
+        setWindowStyle(false);
 
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
@@ -407,7 +416,7 @@ public class SDLActivity extends Activity {
 
     // Messages from the SDLMain thread
     static final int COMMAND_CHANGE_TITLE = 1;
-    static final int COMMAND_UNUSED = 2;
+    static final int COMMAND_CHANGE_WINDOW_STYLE = 2;
     static final int COMMAND_TEXTEDIT_HIDE = 3;
     static final int COMMAND_SET_KEEP_SCREEN_ON = 5;
 
@@ -445,6 +454,36 @@ public class SDLActivity extends Activity {
                 } else {
                     Log.e(TAG, "error handling message, getContext() returned no Activity");
                 }
+                break;
+            case COMMAND_CHANGE_WINDOW_STYLE:
+                if (Build.VERSION.SDK_INT < 19) {
+                    // This version of Android doesn't support the immersive fullscreen mode
+                    break;
+                }
+/* This needs more testing, per bug 4096 - Enabling fullscreen on Android causes the app to toggle fullscreen mode continuously in a loop
+ ***
+                if (context instanceof Activity) {
+                    Window window = ((Activity) context).getWindow();
+                    if (window != null) {
+                        if ((msg.obj instanceof Integer) && (((Integer) msg.obj).intValue() != 0)) {
+                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                            window.getDecorView().setSystemUiVisibility(flags);        
+                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        } else {
+                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+                            window.getDecorView().setSystemUiVisibility(flags);        
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "error handling message, getContext() returned no Activity");
+                }
+***/
                 break;
             case COMMAND_TEXTEDIT_HIDE:
                 if (mTextEdit != null) {
@@ -521,6 +560,14 @@ public class SDLActivity extends Activity {
     public static boolean setActivityTitle(String title) {
         // Called from SDLMain() thread and can't directly affect the view
         return mSingleton.sendCommand(COMMAND_CHANGE_TITLE, title);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void setWindowStyle(boolean fullscreen) {
+        // Called from SDLMain() thread and can't directly affect the view
+        mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
     }
 
     /**
@@ -611,6 +658,17 @@ public class SDLActivity extends Activity {
         return SDL.getContext();
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean isAndroidTV() {
+        UiModeManager uiModeManager = (UiModeManager) getContext().getSystemService(UI_MODE_SERVICE);
+        return (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static DisplayMetrics getDisplayDPI() {
         return getContext().getResources().getDisplayMetrics();
     }
@@ -625,7 +683,7 @@ public class SDLActivity extends Activity {
             if (bundle == null) {
                 return false;
             }
-			String prefix = "SDL_ENV.";
+            String prefix = "SDL_ENV.";
             final int trimLength = prefix.length();
             for (String key : bundle.keySet()) {
                 if (key.startsWith(prefix)) {
@@ -694,7 +752,7 @@ public class SDLActivity extends Activity {
     public static boolean isTextInputEvent(KeyEvent event) {
       
         // Key pressed with Ctrl should be sent as SDL_KEYDOWN/SDL_KEYUP and not SDL_TEXTINPUT
-        if (android.os.Build.VERSION.SDK_INT >= 11) {
+        if (Build.VERSION.SDK_INT >= 11) {
             if (event.isCtrlPressed()) {
                 return false;
             }  
@@ -1013,7 +1071,7 @@ public class SDLActivity extends Activity {
     public static boolean clipboardHasText() {
         return mClipboardHandler.clipboardHasText();
     }
-    
+
     /**
      * This method is called by SDL using JNI.
      */
@@ -1028,6 +1086,94 @@ public class SDLActivity extends Activity {
         mClipboardHandler.clipboardSetText(string);
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int createCustomCursor(int[] colors, int width, int height, int hotSpotX, int hotSpotY) {
+        Bitmap bitmap = Bitmap.createBitmap(colors, width, height, Bitmap.Config.ARGB_8888);
+        ++mLastCursorID;
+        // This requires API 24, so use reflection to implement this
+        try {
+            Class PointerIconClass = Class.forName("android.view.PointerIcon");
+            Class[] arg_types = new Class[] { Bitmap.class, float.class, float.class };
+            Method create = PointerIconClass.getMethod("create", arg_types);
+            mCursors.put(mLastCursorID, create.invoke(null, bitmap, hotSpotX, hotSpotY));
+        } catch (Exception e) {
+            return 0;
+        }
+        return mLastCursorID;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean setCustomCursor(int cursorID) {
+        // This requires API 24, so use reflection to implement this
+        try {
+            Class PointerIconClass = Class.forName("android.view.PointerIcon");
+            Method setPointerIcon = SDLSurface.class.getMethod("setPointerIcon", PointerIconClass);
+            setPointerIcon.invoke(mSurface, mCursors.get(cursorID));
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean setSystemCursor(int cursorID) {
+        int cursor_type = 0; //PointerIcon.TYPE_NULL;
+        switch (cursorID) {
+        case SDL_SYSTEM_CURSOR_ARROW:
+            cursor_type = 1000; //PointerIcon.TYPE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_IBEAM:
+            cursor_type = 1008; //PointerIcon.TYPE_TEXT;
+            break;
+        case SDL_SYSTEM_CURSOR_WAIT:
+            cursor_type = 1004; //PointerIcon.TYPE_WAIT;
+            break;
+        case SDL_SYSTEM_CURSOR_CROSSHAIR:
+            cursor_type = 1007; //PointerIcon.TYPE_CROSSHAIR;
+            break;
+        case SDL_SYSTEM_CURSOR_WAITARROW:
+            cursor_type = 1004; //PointerIcon.TYPE_WAIT;
+            break;
+        case SDL_SYSTEM_CURSOR_SIZENWSE:
+            cursor_type = 1017; //PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_SIZENESW:
+            cursor_type = 1016; //PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_SIZEWE:
+            cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_SIZENS:
+            cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_SIZEALL:
+            cursor_type = 1020; //PointerIcon.TYPE_GRAB;
+            break;
+        case SDL_SYSTEM_CURSOR_NO:
+            cursor_type = 1012; //PointerIcon.TYPE_NO_DROP;
+            break;
+        case SDL_SYSTEM_CURSOR_HAND:
+            cursor_type = 1002; //PointerIcon.TYPE_HAND;
+            break;
+        }
+        // This requires API 24, so use reflection to implement this
+        try {
+            Class PointerIconClass = Class.forName("android.view.PointerIcon");
+            Class[] arg_types = new Class[] { Context.class, int.class };
+            Method getSystemIcon = PointerIconClass.getMethod("getSystemIcon", arg_types);
+            Method setPointerIcon = SDLSurface.class.getMethod("setPointerIcon", PointerIconClass);
+            setPointerIcon.invoke(mSurface, getSystemIcon.invoke(null, SDL.getContext(), cursor_type));
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
 }
 
 /**
@@ -1508,7 +1654,7 @@ class SDLInputConnection extends BaseInputConnection {
          * as we do with physical keyboards, let's just use it to hide the keyboard.
          */
 
-        if (event.getKeyCode() == 66) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
             String imeHide = SDLActivity.nativeGetHint("SDL_RETURN_KEY_HIDES_IME");
             if ((imeHide != null) && imeHide.equals("1")) {
                 Context c = SDL.getContext();

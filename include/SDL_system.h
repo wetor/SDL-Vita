@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -107,6 +107,11 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
    (using env->Push/PopLocalFrame or manually with env->DeleteLocalRef)
  */
 extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
+
+/**
+   \brief Return true if the application is running on Android TV
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 
 /**
    See the official Android developer guide for more information:

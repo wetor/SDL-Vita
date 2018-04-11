@@ -1572,7 +1572,7 @@ Optional Features:
                           QtWayland server support for Wayland video driver
                           [[default=yes]]
   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
-  --enable-video-mir      use Mir video driver [[default=yes]]
+  --enable-video-mir      use Mir video driver [[default=no]]
   --enable-mir-shared     dynamically load Mir support [[default=maybe]]
   --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
   --enable-video-x11      use X11 video driver [[default=yes]]
@@ -16690,7 +16690,7 @@ if test "x$ac_cv_lib_m_pow" = xyes; then :
   LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"
 fi
 
-    for ac_func in acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf fabs fabsf floor floorf fmod fmodf log logf pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf
+    for ac_func in acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf fabs fabsf floor floorf fmod fmodf log logf log10 log10f pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -19220,7 +19220,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1" >>confdefs.h
 
             fi
 
-            WAYLAND_PROTOCOLS_UNSTABLE="relative-pointer-unstable-v1 pointer-constraints-unstable-v1"
+            WAYLAND_PROTOCOLS_UNSTABLE="relative-pointer-unstable-v1 pointer-constraints-unstable-v1 xdg-shell-unstable-v6"
 
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS -I\$(gen)"
@@ -19300,7 +19300,7 @@ CheckMir()
 if test "${enable_video_mir+set}" = set; then :
   enableval=$enable_video_mir;
 else
-  enable_video_mir=yes
+  enable_video_mir=no
 fi
 
 
@@ -19502,12 +19502,56 @@ else
 fi
 
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
-        if test x$ARCH = xnetbsd; then
+        # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+        if test x$PKG_CONFIG != xno && $PKG_CONFIG --exists bcm_host; then
+            RPI_CFLAGS=`$PKG_CONFIG --cflags bcm_host brcmegl`
+            RPI_LDFLAGS=`$PKG_CONFIG --libs bcm_host brcmegl`
+        elif test x$ARCH = xnetbsd; then
             RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
             RPI_LDFLAGS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
         else
             RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-            RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
+            RPI_LDFLAGS="-Wl,-rpath,/opt/vc/lib -L/opt/vc/lib -lbcm_host"
         fi
 
         # Save the original compiler flags and libraries
@@ -21230,11 +21274,49 @@ else
 fi
 
     if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+        save_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS -x objective-c"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Metal framework" >&5
+$as_echo_n "checking for Metal framework... " >&6; }
+        have_metal=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #import <Cocoa/Cocoa.h>
+          #import <Metal/Metal.h>
+          #import <QuartzCore/CAMetalLayer.h>
+
+          #if !TARGET_CPU_X86_64
+          #error Metal doesn't work on this configuration
+          #endif
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        have_metal=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        CFLAGS="$save_CFLAGS"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_metal" >&5
+$as_echo "$have_metal" >&6; }
+        if test x$have_metal = xyes; then
 
 $as_echo "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
 
-        SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
-        SUMMARY_video="${SUMMARY_video} metal"
+            SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+            SUMMARY_video="${SUMMARY_video} metal"
+        else
+            enable_render_metal=no
+        fi
     fi
 }
 
@@ -21933,6 +22015,24 @@ $as_echo "#define SDL_VIDEO_OPENGL_CGL 1" >>confdefs.h
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 
         SUMMARY_video="${SUMMARY_video} opengl"
+    fi
+}
+
+CheckMacGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+        video_opengl_egl=yes
+
+$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
+
+        video_opengles_v2=yes
+
+$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
+
+        SUMMARY_video="${SUMMARY_video} opengl_es2"
     fi
 }
 
@@ -24379,6 +24479,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckMETAL
         CheckX11
         CheckMacGL
+        CheckMacGLES
         CheckOpenGLX11
         CheckVulkan
         CheckPTHREAD
