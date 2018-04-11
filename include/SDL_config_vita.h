@@ -118,6 +118,8 @@
 #define HAVE_TANF   1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
+#define HAVE_LOG10 1
+#define HAVE_LOG10F 1
 /* #define HAVE_SYSCONF  1 */
 /* #define HAVE_SIGACTION    1 */
 
