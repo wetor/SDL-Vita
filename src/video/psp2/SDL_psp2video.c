@@ -303,7 +303,7 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 		return -1;
 	}
 
-	
+	surface->pixels = vglGetTexDataPointer(GL_TEXTURE_2D);
 	surface->pitch = surface->w * surface->format->BytesPerPixel;
 	surface->flags |= SDL_HWSURFACE;
 
@@ -326,26 +326,6 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 {
 	glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
-	
-	switch(surface->format->BitsPerPixel)
-	{
-		case 16:
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface->pixels);
-		break;
-
-		case 24:
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
-		break;
-
-		case 32:
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-		break;
-
-		default:
-			SDL_SetError("unsupported BitsPerPixel: %i\n", surface->format->BitsPerPixel);
-		return -1;
-	}
-
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	vglStartRendering();
