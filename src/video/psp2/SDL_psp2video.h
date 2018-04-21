@@ -26,7 +26,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#include <vita2d.h>
+#include <vitaGL.h>
 
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
@@ -35,7 +35,7 @@
 /* Private display data */
 
 struct SDL_PrivateVideoData {
-	vita2d_texture *texture;
+	GLuint texture;
 };
 
 #endif /* _SDL_psp2video_h */

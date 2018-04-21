@@ -53,7 +53,7 @@
 #define SCREEN_H 544
 
 typedef struct private_hwdata {
-	vita2d_texture *texture;
+	GLuint texture;
 	SDL_Rect dst;
 } private_hwdata;
 
@@ -138,42 +138,74 @@ static SDL_VideoDevice *PSP2_CreateDevice(int devindex)
 	return device;
 }
 
+float *texcoords = NULL;
+uint16_t *indices = NULL;
+
 int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
-	vita2d_init();
-	vita2d_set_vblank_wait(vsync);
+    vglInit(0x100000);
+    vglWaitVblankStart(vsync);
+    vglMapHeapMem();
+    
+    glEnable(GL_TEXTURE_2D);
+    glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0.0f, 960.0f, 544.0f, 0.0f, 0.0f, 1.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+    glLoadIdentity();
 
-	vformat->BitsPerPixel = 16;
-	vformat->BytesPerPixel = 2;
-	vformat->Rmask = 0xF800;
-	vformat->Gmask = 0x07E0;
-	vformat->Bmask = 0x001F;
-	vformat->Amask = 0x0000;
+	vformat->BitsPerPixel = 32;
+	vformat->BytesPerPixel = 4;
+	vformat->Rmask = 0x000000FF;
+	vformat->Gmask = 0x0000FF00;
+	vformat->Bmask = 0x00FF0000;
+	vformat->Amask = 0xFF000000;
 
 	PSP2_InitKeyboard();
 	PSP2_InitMouse();
+    
+    texcoords = malloc(sizeof(float)*8);
+    texcoords[0] = 0.0f;
+    texcoords[1] = 0.0f;
+    texcoords[2] = 1.0f;
+    texcoords[3] = 0.0f;
+    texcoords[4] = 1.0f;
+    texcoords[5] = 1.0f;
+    texcoords[6] = 0.0f;
+    texcoords[7] = 1.0f;
 
+    indices = malloc(sizeof(uint16_t)*4);
+    indices[0] = 0;
+    indices[1] = 1;
+    indices[2] = 2;
+    indices[3] = 3;
+    
 	return(0);
 }
 
 SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 				int width, int height, int bpp, Uint32 flags)
 {
-	// support only 16/24 bits for now
 	switch(bpp)
 	{
 		case 16:
-		break;
-
-		case 24:
-			if (!SDL_ReallocFormat(current, 24, 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000))
+            if (!SDL_ReallocFormat(current, 16, 0xF800, 0x07C0, 0x003E, 0x0001))
 			{
 				SDL_SetError("Couldn't allocate new pixel format for requested mode");
 				return(NULL);
 			}
 		break;
 
-		/* // TODO: crash
+		case 24:
+			if (!SDL_ReallocFormat(current, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0x00000000))
+			{
+				SDL_SetError("Couldn't allocate new pixel format for requested mode");
+				return(NULL);
+			}
+		break;
+
 		case 32:
 			if (!SDL_ReallocFormat(current, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000))
 			{
@@ -181,17 +213,22 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 				return(NULL);
 			}
 		break;
-		*/
 
 		default:
-			if (!SDL_ReallocFormat(current, 16, 0xF800, 0x07E0, 0x001F, 0x0000))
+			if (!SDL_ReallocFormat(current, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000))
 			{
 				SDL_SetError("Couldn't allocate new pixel format for requested mode");
 				return(NULL);
 			}
 		break;
 	}
-
+    
+    glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0.0f, width, height, 0.0f, 0.0f, 1.0f);
+	glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
 	current->flags = flags | SDL_FULLSCREEN | SDL_DOUBLEBUF;
 	current->w = width;
 	current->h = height;
@@ -219,7 +256,7 @@ SDL_Rect **PSP2_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 	{
 		case 16:
 		case 24:
-		//case 32: // TODO
+		case 32:
 		return modes;
 
 		default:
@@ -242,33 +279,32 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 	surface->hwdata->dst.y = 0;
 	surface->hwdata->dst.w = surface->w;
 	surface->hwdata->dst.h = surface->h;
+    glGenTextures(1, &surface->hwdata->texture);
+    glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
 
+    surface->pixels = malloc(surface->w * surface->h * surface->format->BytesPerPixel);
+    
 	switch(surface->format->BitsPerPixel)
 	{
 		case 16:
-			surface->hwdata->texture =
-				vita2d_create_empty_texture_format(surface->w, surface->h, SCE_GXM_TEXTURE_FORMAT_R5G6B5);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface->pixels);
 		break;
 
 		case 24:
-			surface->hwdata->texture =
-				vita2d_create_empty_texture_format(surface->w, surface->h, SCE_GXM_TEXTURE_FORMAT_U8U8U8_RGB);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, surface->w, surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
 		break;
 
-		/* // TODO: crash
 		case 32:
-			surface->hwdata->texture =
-				vita2d_create_empty_texture_format(surface->w, surface->h, SCE_GXM_COLOR_FORMAT_A8B8G8R8);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 		break;
-		*/
 
 		default:
 			SDL_SetError("unsupported BitsPerPixel: %i\n", surface->format->BitsPerPixel);
 		return -1;
 	}
 
-	surface->pixels = vita2d_texture_get_datap(surface->hwdata->texture);
-	surface->pitch = vita2d_texture_get_stride(surface->hwdata->texture);
+	
+	surface->pitch = surface->w * surface->format->BytesPerPixel;
 	surface->flags |= SDL_HWSURFACE;
 
 	return(0);
@@ -278,8 +314,9 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 {
 	if (surface->hwdata != NULL)
 	{
-		vita2d_wait_rendering_done();
-		vita2d_free_texture(surface->hwdata->texture);
+		glFinish();
+        glDeleteTextures(1, &surface->hwdata->texture);
+        free(surface->pixels);
 		SDL_free(surface->hwdata);
 		surface->hwdata = NULL;
 		surface->pixels = NULL;
@@ -288,20 +325,44 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 
 static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 {
-	vita2d_start_drawing();
-
-	vita2d_draw_texture_scale(
-		surface->hwdata->texture,
-		surface->hwdata->dst.x, surface->hwdata->dst.y,
-		(float)surface->hwdata->dst.w/(float)surface->w,
-		(float)surface->hwdata->dst.h/(float)surface->h);
-
-	vita2d_end_drawing();
-	if(vsync == 1)
+    glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
+    
+    switch(surface->format->BitsPerPixel)
 	{
-		vita2d_wait_rendering_done();
+		case 16:
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface->pixels);
+		break;
+
+		case 24:
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
+		break;
+
+		case 32:
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+		break;
+
+		default:
+			SDL_SetError("unsupported BitsPerPixel: %i\n", surface->format->BitsPerPixel);
+		return -1;
 	}
-	vita2d_swap_buffers();
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	vglStartRendering();
+    
+    float vertices[] = {
+        surface->hwdata->dst.x, surface->hwdata->dst.y, 0,
+        surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y, 0,
+        surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0,
+        surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0
+    };
+    vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
+    
+    vglTexCoordPointerMapped(texcoords);
+    vglIndexPointerMapped(indices);
+    vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+
+	vglStopRendering();
 }
 
 // custom psp2 function for centering/scaling main screen surface (texture)
@@ -329,15 +390,13 @@ void SDL_SetVideoModeBilinear(int enable_bilinear)
 		//for magnification
 		//(first one is minimization filter,
 		//second one is magnification filter)
-		vita2d_texture_set_filters(surface->hwdata->texture,
-			SCE_GXM_TEXTURE_FILTER_POINT,
-			SCE_GXM_TEXTURE_FILTER_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	else
 	{
-		vita2d_texture_set_filters(surface->hwdata->texture,
-			SCE_GXM_TEXTURE_FILTER_POINT,
-			SCE_GXM_TEXTURE_FILTER_POINT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 }	
 
@@ -345,7 +404,7 @@ void SDL_SetVideoModeBilinear(int enable_bilinear)
 void SDL_SetVideoModeSync(int enable_vsync)
 {
 	vsync = enable_vsync;
-	vita2d_set_vblank_wait(vsync);
+	vglWaitVblankStart(vsync);
 }
 
 static int PSP2_LockHWSurface(_THIS, SDL_Surface *surface)
@@ -374,7 +433,9 @@ void PSP2_VideoQuit(_THIS)
 	{
 		PSP2_FreeHWSurface(this, this->screen);
 	}
-	vita2d_fini();
+    free(texcoords);
+    free(indices);
+	vglEnd();
 }
 
 VideoBootStrap PSP2_bootstrap = {
