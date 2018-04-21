@@ -1,23 +1,23 @@
 /*
-    SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2012 Sam Lantinga
+	SDL - Simple DirectMedia Layer
+	Copyright (C) 1997-2012 Sam Lantinga
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Lesser General Public
+	License as published by the Free Software Foundation; either
+	version 2.1 of the License, or (at your option) any later version.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	You should have received a copy of the GNU Lesser General Public
+	License along with this library; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-    Sam Lantinga
-    slouken@libsdl.org
+	Sam Lantinga
+	slouken@libsdl.org
 */
 #include "SDL_config.h"
 
@@ -143,18 +143,18 @@ uint16_t *indices = NULL;
 
 int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
-    vglInit(0x100000);
-    vglWaitVblankStart(vsync);
-    vglMapHeapMem();
-    
-    glEnable(GL_TEXTURE_2D);
-    glMatrixMode(GL_PROJECTION);
+	vglInit(0x100000);
+	vglWaitVblankStart(vsync);
+	vglMapHeapMem();
+	
+	glEnable(GL_TEXTURE_2D);
+	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 	glOrtho(0.0f, 960.0f, 544.0f, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-    glLoadIdentity();
+	glLoadIdentity();
 
 	vformat->BitsPerPixel = 32;
 	vformat->BytesPerPixel = 4;
@@ -165,23 +165,23 @@ int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 
 	PSP2_InitKeyboard();
 	PSP2_InitMouse();
-    
-    texcoords = malloc(sizeof(float)*8);
-    texcoords[0] = 0.0f;
-    texcoords[1] = 0.0f;
-    texcoords[2] = 1.0f;
-    texcoords[3] = 0.0f;
-    texcoords[4] = 1.0f;
-    texcoords[5] = 1.0f;
-    texcoords[6] = 0.0f;
-    texcoords[7] = 1.0f;
+	
+	texcoords = malloc(sizeof(float)*8);
+	texcoords[0] = 0.0f;
+	texcoords[1] = 0.0f;
+	texcoords[2] = 1.0f;
+	texcoords[3] = 0.0f;
+	texcoords[4] = 1.0f;
+	texcoords[5] = 1.0f;
+	texcoords[6] = 0.0f;
+	texcoords[7] = 1.0f;
 
-    indices = malloc(sizeof(uint16_t)*4);
-    indices[0] = 0;
-    indices[1] = 1;
-    indices[2] = 2;
-    indices[3] = 3;
-    
+	indices = malloc(sizeof(uint16_t)*4);
+	indices[0] = 0;
+	indices[1] = 1;
+	indices[2] = 2;
+	indices[3] = 3;
+	
 	return(0);
 }
 
@@ -191,7 +191,7 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 	switch(bpp)
 	{
 		case 16:
-            if (!SDL_ReallocFormat(current, 16, 0xF800, 0x07C0, 0x003E, 0x0001))
+			if (!SDL_ReallocFormat(current, 16, 0xF800, 0x07C0, 0x003E, 0x0001))
 			{
 				SDL_SetError("Couldn't allocate new pixel format for requested mode");
 				return(NULL);
@@ -222,13 +222,13 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 			}
 		break;
 	}
-    
-    glMatrixMode(GL_PROJECTION);
+	
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0.0f, width, height, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
+	glLoadIdentity();
+	
 	current->flags = flags | SDL_FULLSCREEN | SDL_DOUBLEBUF;
 	current->w = width;
 	current->h = height;
@@ -279,11 +279,11 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 	surface->hwdata->dst.y = 0;
 	surface->hwdata->dst.w = surface->w;
 	surface->hwdata->dst.h = surface->h;
-    glGenTextures(1, &surface->hwdata->texture);
-    glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
+	glGenTextures(1, &surface->hwdata->texture);
+	glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
 
-    surface->pixels = malloc(surface->w * surface->h * surface->format->BytesPerPixel);
-    
+	surface->pixels = malloc(surface->w * surface->h * surface->format->BytesPerPixel);
+	
 	switch(surface->format->BitsPerPixel)
 	{
 		case 16:
@@ -315,8 +315,8 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 	if (surface->hwdata != NULL)
 	{
 		glFinish();
-        glDeleteTextures(1, &surface->hwdata->texture);
-        free(surface->pixels);
+		glDeleteTextures(1, &surface->hwdata->texture);
+		free(surface->pixels);
 		SDL_free(surface->hwdata);
 		surface->hwdata = NULL;
 		surface->pixels = NULL;
@@ -325,9 +325,9 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface)
 
 static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 {
-    glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
-    
-    switch(surface->format->BitsPerPixel)
+	glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
+	
+	switch(surface->format->BitsPerPixel)
 	{
 		case 16:
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface->pixels);
@@ -346,21 +346,21 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 		return -1;
 	}
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	vglStartRendering();
-    
-    float vertices[] = {
-        surface->hwdata->dst.x, surface->hwdata->dst.y, 0,
-        surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y, 0,
-        surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0,
-        surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0
-    };
-    vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
-    
-    vglTexCoordPointerMapped(texcoords);
-    vglIndexPointerMapped(indices);
-    vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+	
+	float vertices[] = {
+		surface->hwdata->dst.x, surface->hwdata->dst.y, 0,
+		surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y, 0,
+		surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0,
+		surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0
+	};
+	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
+	
+	vglTexCoordPointerMapped(texcoords);
+	vglIndexPointerMapped(indices);
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 
 	vglStopRendering();
 }
@@ -390,13 +390,13 @@ void SDL_SetVideoModeBilinear(int enable_bilinear)
 		//for magnification
 		//(first one is minimization filter,
 		//second one is magnification filter)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	else
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 }	
 
@@ -433,8 +433,8 @@ void PSP2_VideoQuit(_THIS)
 	{
 		PSP2_FreeHWSurface(this, this->screen);
 	}
-    free(texcoords);
-    free(indices);
+	free(texcoords);
+	free(indices);
 	vglEnd();
 }
 
