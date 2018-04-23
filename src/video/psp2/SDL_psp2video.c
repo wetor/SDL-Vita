@@ -76,6 +76,8 @@ static void PSP2_FreeHWSurface(_THIS, SDL_Surface *surface);
 /* etc. */
 static void PSP2_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 
+void (*callback)();
+
 /* PSP2 driver bootstrap functions */
 static int PSP2_Available(void)
 {
@@ -182,6 +184,8 @@ int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	indices[2] = 2;
 	indices[3] = 3;
 	
+    callback = NULL;
+    
 	return(0);
 }
 
@@ -335,17 +339,14 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 		surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0,
 		surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0
 	};
-
-#ifdef DIRECT_RENDERING    
+  
     vglStartRendering();
-#endif
 	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
 	vglTexCoordPointerMapped(texcoords);
 	vglIndexPointerMapped(indices);
 	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
-#ifdef DIRECT_RENDERING
+    if (callback != NULL) callback();
 	vglStopRendering();
-#endif
 }
 
 // custom psp2 function for centering/scaling main screen surface (texture)
@@ -382,6 +383,11 @@ void SDL_SetVideoModeBilinear(int enable_bilinear)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 }	
+
+// custom psp2 function for rendering callback
+void SDL_SetVideoCallback(void (*cb)()){
+    callback = cb;
+}
 
 // custom psp2 function for vsync
 void SDL_SetVideoModeSync(int enable_vsync)

@@ -40,6 +40,7 @@ extern "C" {
 void SDL_SetVideoModeScaling(int x, int y, float w, float h);
 void SDL_SetVideoModeBilinear(int enable_bilinear);
 void SDL_SetVideoModeSync(int enable_vsync);
+void SDL_SetVideoCallback(void (*cb)());
 #ifdef __cplusplus
 }
 #endif
