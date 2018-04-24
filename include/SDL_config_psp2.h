@@ -36,11 +36,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum SDL_Shader{
+	SDL_SHADER_LCD3X = 0,
+	SDL_SHADER_SHARP_BILINEAR = 1,
+	SDL_SHADER_SHARP_BILINEAR_SIMPLE = 2,
+	SDL_SHADER_XBR_2X_FAST = 3,
+	SDL_SHADER_NONE = 4
+} SDL_Shader;
+
 // custom ps vita hardware scaling
 void SDL_SetVideoModeScaling(int x, int y, float w, float h);
 void SDL_SetVideoModeBilinear(int enable_bilinear);
 void SDL_SetVideoModeSync(int enable_vsync);
 void SDL_SetVideoCallback(void (*cb)());
+void SDL_SetVideoShader(SDL_Shader shader);
 #ifdef __cplusplus
 }
 #endif

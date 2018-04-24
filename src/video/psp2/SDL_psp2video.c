@@ -47,6 +47,15 @@
 #include "SDL_psp2mouse_c.h"
 #include "SDL_psp2keyboard_c.h"
 
+#include "shaders/lcd3x_f.h"
+#include "shaders/lcd3x_v.h"
+#include "shaders/sharp_bilinear_f.h"
+#include "shaders/sharp_bilinear_v.h"
+#include "shaders/sharp_bilinear_simple_f.h"
+#include "shaders/sharp_bilinear_simple_v.h"
+#include "shaders/xbr_2x_fast_f.h"
+#include "shaders/xbr_2x_fast_v.h"
+
 #define PSP2VID_DRIVER_NAME "psp2"
 
 #define SCREEN_W 960
@@ -142,6 +151,17 @@ static SDL_VideoDevice *PSP2_CreateDevice(int devindex)
 
 float *texcoords = NULL;
 uint16_t *indices = NULL;
+GLint fs[4], vs[4], shaders[4];
+
+typedef struct shader_uniforms{
+	GLint video_size[2];
+	GLint texture_size[2];
+	GLint output_size[2];
+} shader_uniforms;
+
+shader_uniforms unif[4];
+SDL_Shader cur_shader = SDL_SHADER_NONE;
+float texture_size[2], output_size[2];
 
 int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
@@ -185,7 +205,37 @@ int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	indices[3] = 3;
 	
     callback = NULL;
+	
+	int i;
+	for (i = 0; i < 4; i++){
+		fs[i] = glCreateShader(GL_FRAGMENT_SHADER);
+		vs[i] = glCreateShader(GL_VERTEX_SHADER);
+		shaders[i] = glCreateProgram();
+	}
     
+	glShaderBinary(1, &fs[SDL_SHADER_LCD3X], 0, lcd3x_f, size_lcd3x_f);
+	glShaderBinary(1, &fs[SDL_SHADER_SHARP_BILINEAR], 0, sharp_bilinear_f, size_sharp_bilinear_f);
+	glShaderBinary(1, &fs[SDL_SHADER_SHARP_BILINEAR_SIMPLE], 0, sharp_bilinear_simple_f, size_sharp_bilinear_simple_f);
+	glShaderBinary(1, &fs[SDL_SHADER_XBR_2X_FAST], 0, xbr_2x_fast_f, size_xbr_2x_fast_f);
+	glShaderBinary(1, &vs[SDL_SHADER_LCD3X], 0, lcd3x_v, size_lcd3x_v);
+	glShaderBinary(1, &vs[SDL_SHADER_SHARP_BILINEAR], 0, sharp_bilinear_v, size_sharp_bilinear_v);
+	glShaderBinary(1, &vs[SDL_SHADER_SHARP_BILINEAR_SIMPLE], 0, sharp_bilinear_simple_v, size_sharp_bilinear_simple_v);
+	glShaderBinary(1, &vs[SDL_SHADER_XBR_2X_FAST], 0, xbr_2x_fast_v, size_xbr_2x_fast_v);
+	
+	for (i = 0; i < 4; i++) {
+		glAttachShader(shaders[i], fs[i]);
+		glAttachShader(shaders[i], vs[i]);
+		vglBindAttribLocation(shaders[i], 0, "aPosition", 3, GL_FLOAT);
+		vglBindAttribLocation(shaders[i], 1, "aTexcoord", 2, GL_FLOAT);
+		unif[i].video_size[0] = glGetUniformLocation(shaders[i], "IN.video_size");
+		unif[i].texture_size[0] = glGetUniformLocation(shaders[i], "IN.texture_size");
+		unif[i].output_size[0] = glGetUniformLocation(shaders[i], "IN.output_size");
+		unif[i].video_size[1] = glGetUniformLocation(shaders[i], "IN2.video_size");
+		unif[i].texture_size[1] = glGetUniformLocation(shaders[i], "IN2.texture_size");
+		unif[i].output_size[1] = glGetUniformLocation(shaders[i], "IN2.output_size");
+		glLinkProgram(shaders[i]);
+	}
+	
 	return(0);
 }
 
@@ -236,6 +286,10 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 	current->flags = flags | SDL_FULLSCREEN | SDL_DOUBLEBUF;
 	current->w = width;
 	current->h = height;
+	texture_size[0] = width;
+	texture_size[1] = height;
+	output_size[0] = 960.0f;
+	output_size[1] = 544.0f;
 	if(current->hwdata == NULL)
 	{
 		PSP2_AllocHWSurface(this, current);
@@ -342,10 +396,23 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
   
     vglStartRendering();
 	glClear(GL_COLOR_BUFFER_BIT);
-	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
-	vglTexCoordPointerMapped(texcoords);
+	if (cur_shader != SDL_SHADER_NONE){
+		glUseProgram(shaders[cur_shader]);
+		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertices);
+		vglVertexAttribPointerMapped(1, texcoords);
+		int i;
+		for (i = 0; i < 2; i++){
+			glUniform2fv(unif[cur_shader].output_size[i], 1, output_size);
+			glUniform2fv(unif[cur_shader].video_size[i], 1, texture_size);
+			glUniform2fv(unif[cur_shader].texture_size[i], 1, texture_size);
+		}
+	}else{
+		vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
+		vglTexCoordPointerMapped(texcoords);
+	}
 	vglIndexPointerMapped(indices);
 	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+	glUseProgram(0);
     if (callback != NULL) callback();
 	vglStopRendering();
 }
@@ -395,6 +462,12 @@ void SDL_SetVideoModeSync(int enable_vsync)
 {
 	vsync = enable_vsync;
 	vglWaitVblankStart(vsync);
+}
+
+// custom psp2 function for shaders
+void SDL_SetVideoShader(SDL_Shader shader)
+{
+	cur_shader = shader;
 }
 
 static int PSP2_LockHWSurface(_THIS, SDL_Surface *surface)
