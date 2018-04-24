@@ -229,7 +229,7 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, width, height, 0.0f, 0.0f, 1.0f);
+	glOrtho(0.0f, 960.0f, 544.0f, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
@@ -281,8 +281,8 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 	// set initial texture destination
 	surface->hwdata->dst.x = 0;
 	surface->hwdata->dst.y = 0;
-	surface->hwdata->dst.w = surface->w;
-	surface->hwdata->dst.h = surface->h;
+	surface->hwdata->dst.w = 960.0f;
+	surface->hwdata->dst.h = 544.0f;
 	glGenTextures(1, &surface->hwdata->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
 
@@ -341,6 +341,7 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 	};
   
     vglStartRendering();
+	glClear(GL_COLOR_BUFFER_BIT);
 	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
 	vglTexCoordPointerMapped(texcoords);
 	vglIndexPointerMapped(indices);
