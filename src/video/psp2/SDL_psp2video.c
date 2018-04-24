@@ -173,7 +173,7 @@ int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glOrtho(0.0f, 960.0f, 544.0f, 0.0f, 0.0f, 1.0f);
+	glOrtho(0.0f, SCREEN_W, SCREEN_H, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
@@ -225,7 +225,7 @@ int PSP2_VideoInit(_THIS, SDL_PixelFormat *vformat)
 	for (i = 0; i < 4; i++) {
 		glAttachShader(shaders[i], fs[i]);
 		glAttachShader(shaders[i], vs[i]);
-		vglBindAttribLocation(shaders[i], 0, "aPosition", 3, GL_FLOAT);
+		vglBindAttribLocation(shaders[i], 0, "aPosition", 4, GL_FLOAT);
 		vglBindAttribLocation(shaders[i], 1, "aTexcoord", 2, GL_FLOAT);
 		unif[i].video_size[0] = glGetUniformLocation(shaders[i], "IN.video_size");
 		unif[i].texture_size[0] = glGetUniformLocation(shaders[i], "IN.texture_size");
@@ -279,7 +279,7 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, 960.0f, 544.0f, 0.0f, 0.0f, 1.0f);
+	glOrtho(0.0f, SCREEN_W, SCREEN_H, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
@@ -288,8 +288,8 @@ SDL_Surface *PSP2_SetVideoMode(_THIS, SDL_Surface *current,
 	current->h = height;
 	texture_size[0] = width;
 	texture_size[1] = height;
-	output_size[0] = 960.0f;
-	output_size[1] = 544.0f;
+	output_size[0] = SCREEN_W;
+	output_size[1] = SCREEN_H;
 	if(current->hwdata == NULL)
 	{
 		PSP2_AllocHWSurface(this, current);
@@ -335,8 +335,8 @@ static int PSP2_AllocHWSurface(_THIS, SDL_Surface *surface)
 	// set initial texture destination
 	surface->hwdata->dst.x = 0;
 	surface->hwdata->dst.y = 0;
-	surface->hwdata->dst.w = 960.0f;
-	surface->hwdata->dst.h = 544.0f;
+	surface->hwdata->dst.w = SCREEN_W;
+	surface->hwdata->dst.h = SCREEN_H;
 	glGenTextures(1, &surface->hwdata->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
 
@@ -386,19 +386,19 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 	glBindTexture(GL_TEXTURE_2D, surface->hwdata->texture);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	float vertices[] = {
-		surface->hwdata->dst.x, surface->hwdata->dst.y, 0,
-		surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y, 0,
-		surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0,
-		surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0
-	};
   
     vglStartRendering();
 	glClear(GL_COLOR_BUFFER_BIT);
 	if (cur_shader != SDL_SHADER_NONE){
+		float vertices[] = {
+			surface->hwdata->dst.x, surface->hwdata->dst.y, 0, 1,
+			surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y, 0, 1,
+			surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0, 1,
+			surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0, 1
+		};
+		
 		glUseProgram(shaders[cur_shader]);
-		vglVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 4, vertices);
+		vglVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 4, vertices);
 		vglVertexAttribPointerMapped(1, texcoords);
 		int i;
 		for (i = 0; i < 2; i++){
@@ -407,6 +407,13 @@ static int PSP2_FlipHWSurface(_THIS, SDL_Surface *surface)
 			glUniform2fv(unif[cur_shader].texture_size[i], 1, texture_size);
 		}
 	}else{
+		float vertices[] = {
+			surface->hwdata->dst.x, surface->hwdata->dst.y, 0,
+			surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y, 0,
+			surface->hwdata->dst.x + surface->hwdata->dst.w, surface->hwdata->dst.y + surface->hwdata->dst.h, 0,
+			surface->hwdata->dst.x, surface->hwdata->dst.y + surface->hwdata->dst.h, 0
+		};
+		
 		vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
 		vglTexCoordPointerMapped(texcoords);
 	}
@@ -428,6 +435,8 @@ void SDL_SetVideoModeScaling(int x, int y, float w, float h)
 		surface->hwdata->dst.y = y;
 		surface->hwdata->dst.w = w;
 		surface->hwdata->dst.h = h;
+		output_size[0] = w;
+		output_size[1] = h;
 	}
 }
 
