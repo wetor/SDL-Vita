@@ -465,8 +465,10 @@ VITA_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
 				const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
 	VITA_TextureData *vita_texture = (VITA_TextureData *) texture->driverdata;
-	float scaleX = dstrect->w > srcrect->w ? (float)(dstrect->w/srcrect->w) : 1;
-	float scaleY = dstrect->h > srcrect->h ? (float)(dstrect->h/srcrect->h) : 1;
+	//float scaleX = dstrect->w > srcrect->w ? (float)(dstrect->w/srcrect->w) : 1;
+	//float scaleY = dstrect->h > srcrect->h ? (float)(dstrect->h/srcrect->h) : 1;
+	float scaleX = dstrect->w == srcrect->w ? 1 : (float)(dstrect->w/srcrect->w);
+	float scaleY = dstrect->h == srcrect->h ? 1 : (float)(dstrect->h/srcrect->h);
 
 	StartDrawing(renderer);
 
