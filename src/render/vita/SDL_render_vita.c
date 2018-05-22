@@ -277,8 +277,8 @@ VITA_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 	int row, length,dpitch;
 	src = pixels;
 
-	VITA_LockTexture(renderer, texture,rect,(void **)&dst, &dpitch);
-	length = rect->w *SDL_BYTESPERPIXEL(texture->format);
+	VITA_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
+	length = rect->w * SDL_BYTESPERPIXEL(texture->format);
 	if (length == pitch && length == dpitch) {
 		SDL_memcpy(dst, src, length*rect->h);
 	} else {
@@ -301,7 +301,7 @@ VITA_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 	*pixels =
 		(void *) ((Uint8 *) vita2d_texture_get_datap(vita_texture->tex)
-			+ rect->y *vita_texture->w + rect->x *SDL_BYTESPERPIXEL(texture->format));
+			+ (rect->y * vita_texture->w + rect->x) * SDL_BYTESPERPIXEL(texture->format));
 	*pitch = vita_texture->pitch;
 	return 0;
 }
