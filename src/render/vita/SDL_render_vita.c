@@ -469,13 +469,23 @@ VITA_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture,
 	//float scaleY = dstrect->h > srcrect->h ? (float)(dstrect->h/srcrect->h) : 1;
 	float scaleX = dstrect->w == srcrect->w ? 1 : (float)(dstrect->w/srcrect->w);
 	float scaleY = dstrect->h == srcrect->h ? 1 : (float)(dstrect->h/srcrect->h);
+	Uint8 r, g, b, a;
+    
+	SDL_GetTextureColorMod(texture, &r, &g, &b);
+	SDL_GetTextureAlphaMod(texture, &a);
 
 	StartDrawing(renderer);
 
 	VITA_SetBlendMode(renderer, renderer->blendMode);
 
-	vita2d_draw_texture_part_scale(vita_texture->tex, dstrect->x, dstrect->y,
-		srcrect->x, srcrect->y, srcrect->w, srcrect->h, scaleX, scaleY);
+	if(r == 255 && g == 255 && b == 255 && a == 255)
+	{
+		vita2d_draw_texture_part_scale(vita_texture->tex, dstrect->x, dstrect->y,
+			srcrect->x, srcrect->y, srcrect->w, srcrect->h, scaleX, scaleY);
+	} else {
+		vita2d_draw_texture_tint_part_scale(vita_texture->tex, dstrect->x, dstrect->y,
+			srcrect->x, srcrect->y, srcrect->w, srcrect->h, scaleX, scaleY, (a << 24) + (b << 16) + (g << 8) + r);
+	}
 
 	return 0;
 }
