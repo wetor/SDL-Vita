@@ -50,6 +50,8 @@ typedef signed short int16_t;
 typedef unsigned short uint16_t;
 typedef unsigned int size_t;
 
+#define SDL_HAS_64BIT_TYPE 1
+
 #define HAVE_GCC_ATOMICS    1
 
 #define HAVE_ALLOCA_H       1
