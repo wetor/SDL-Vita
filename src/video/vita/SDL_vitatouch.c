@@ -36,23 +36,33 @@ SceTouchData touch_old[SCE_TOUCH_PORT_MAX_NUM];
 SceTouchData touch[SCE_TOUCH_PORT_MAX_NUM];
 
 SceTouchPanelInfo panelinfo[SCE_TOUCH_PORT_MAX_NUM];
-
+int touch_mode = 0;
 float aAWidth[SCE_TOUCH_PORT_MAX_NUM];
 float aAHeight[SCE_TOUCH_PORT_MAX_NUM];
 float dispWidth[SCE_TOUCH_PORT_MAX_NUM];
 float dispHeight[SCE_TOUCH_PORT_MAX_NUM];
 float forcerange[SCE_TOUCH_PORT_MAX_NUM];
-
+void 
+VITA_SetBackTouch(int flag)
+{
+	VITA_QuitTouch();
+	touch_mode = flag;
+	VITA_InitTouch();
+}
 void 
 VITA_InitTouch(void)
 {
-	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
-	sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
-	sceTouchEnableTouchForce(SCE_TOUCH_PORT_FRONT);
-	sceTouchEnableTouchForce(SCE_TOUCH_PORT_BACK);
-
+	if(touch_mode >= 0){
+		sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
+		sceTouchEnableTouchForce(SCE_TOUCH_PORT_FRONT);
+	}
+	if(touch_mode == 1){
+		sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
+		sceTouchEnableTouchForce(SCE_TOUCH_PORT_BACK);
+	}
+	
 	SceTouchPanelInfo panelinfo[SCE_TOUCH_PORT_MAX_NUM];
-	for(int port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+	for(int port = 0; port < touch_mode + 1; port++) {
 		sceTouchGetPanelInfo(port, &panelinfo[port]);
 		aAWidth[port] = (float)(panelinfo[port].maxAaX - panelinfo[port].minAaX);
 		aAHeight[port] = (float)(panelinfo[port].maxAaY - panelinfo[port].minAaY);
@@ -62,14 +72,18 @@ VITA_InitTouch(void)
 	}
 
 	// Support passing both front and back touch devices in events
-	SDL_AddTouch((SDL_TouchID)0, "Front");
-	SDL_AddTouch((SDL_TouchID)1, "Back");
+	if(touch_mode >= 0)
+		SDL_AddTouch((SDL_TouchID)0, "Front");
+	if(touch_mode == 1)
+		SDL_AddTouch((SDL_TouchID)1, "Back");
 }
 
 void 
 VITA_QuitTouch(void){
-	sceTouchDisableTouchForce(SCE_TOUCH_PORT_FRONT);
-	sceTouchDisableTouchForce(SCE_TOUCH_PORT_BACK);
+	if(touch_mode >= 0)
+		sceTouchDisableTouchForce(SCE_TOUCH_PORT_FRONT);
+	if(touch_mode == 1)
+		sceTouchDisableTouchForce(SCE_TOUCH_PORT_BACK);
 }
 
 void 
@@ -84,7 +98,7 @@ VITA_PollTouch(void)
 
 	memcpy(touch_old, touch, sizeof(touch_old));
 
-	for(port = 0; port < SCE_TOUCH_PORT_MAX_NUM; port++) {
+	for(port = 0; port < touch_mode + 1; port++) {
 		sceTouchPeek(port, &touch[port], 1);
 		if (touch[port].reportNum > 0) {
 			for (int i = 0; i < touch[port].reportNum; i++)
