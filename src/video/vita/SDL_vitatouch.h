@@ -25,6 +25,7 @@
 #include "../../SDL_internal.h"
 
 /* Touch functions */
+extern void VITA_SetBackTouch(int flag);
 extern void VITA_InitTouch(void);
 extern void VITA_QuitTouch(void);
 extern void VITA_PollTouch(void);
