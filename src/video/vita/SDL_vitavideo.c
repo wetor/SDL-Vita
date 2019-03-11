@@ -252,6 +252,12 @@ VITA_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 void
 VITA_SetWindowTitle(_THIS, SDL_Window * window)
 {
+    if(SDL_strcmp(window->title,"use_front_only_touch") == 0)
+        VITA_SetBackTouch(0);
+    else if(SDL_strcmp(window->title,"use_front_back_touch") == 0)
+        VITA_SetBackTouch(1);
+    else if(SDL_strcmp(window->title,"use_not_touch") == 0)
+        VITA_SetBackTouch(-1);
 }
 void
 VITA_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
